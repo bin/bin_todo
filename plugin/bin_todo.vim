@@ -1,17 +1,19 @@
-" bnote.vim - Note taking
+" bin_todo.vim - Todo list
 " Author: 	bin
 " Version:	0.1
 
-if exists("g:loaded_bnote") || &cp || v:version < 800
+if exists("g:_loaded_bin_todo") || &cp || v:version < 800
 	finish
 endif
-let g:loaded_bnote = 1
+let g:_loaded_bin_todo = 1
 
-" Find the line numbers of current block (day)
-" Top line is line num of first line after the date (including newlines)
-" Bottom line is line num of last line before next date (including newlines)
-" function s:get_curr_block_lines()
-function Get_curr_block_lines()
+" Find the line numbers of current block
+" Blocks are delimited by dates of the following form:
+" = mm.dd.yyyy =
+" Searches up to find the top and down to find the bottom; the plugin operates 
+" only on the current block
+" Line numbers don't include the date lines but do include newlines
+function s:_get_curr_block_lines()
 	" find top of block
 	let curr_line = line('.')
 	while getline(curr_line) !~# '^=.*' && curr_line >= 0
@@ -27,8 +29,14 @@ function Get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-" function s:sort_block()
-function Sort_block()
+function s:_sort_block()
+	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
+	" symbol and append each line to the appropriate list.
+	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
+	" When we hit a sub-item, append it to the list of the last top-level 
+	" item.
+	" TODO: Might there be a more-efficient sort, even if I don't care about 
+	" in-place sorting?
 	let i = g:top_line
 	let last_type = ""
 	let g:bullet_elems = []
@@ -36,7 +44,6 @@ function Sort_block()
 	let g:tilde_elems = []
 	let g:dot_elems = []
 	while i >= g:top_line && i <= g:bottom_line
-		" TODO: get sub-point lines
 		let line = getline(i)
 		if line =~# '\t\* .*'
 			call add(g:bullet_elems, line)
@@ -51,7 +58,6 @@ function Sort_block()
 			call add(g:dot_elems, line)
 			let last_type = 3
 		elseif line =~# '\t\t\+'
-			echo "Matched line " . i . " as sub elem"
 			if last_type == 0
 				call add(g:bullet_elems, line)
 			elseif last_type == 1
@@ -67,37 +73,34 @@ function Sort_block()
 	endwhile
 endfunction
 
-" function s:write_sorted()
-function Write_sorted()
-	" back up starting line
+function s:_write_sorted()
+	" store starting line
 	let orig_line = line('.')
 	let new_top = g:top_line - 1
-	" jump to top line
+	" jump to top line of block
 	execute g:top_line
-	" delete old
+	" delete old block
 	let difference = g:bottom_line - g:top_line
 	let difference += 1
 	execute "d" . difference
 
-	" this just appends to the current line and doesn't move the cursor
-	" so the first things appended gets pushed down as more lines are appended
-	" so append in reverse order to get final order correct
+	" Output re-ordered block.
+	" append() appends to the current line by inserting below it.  It 
+	" doesn't move the cursor.  Append()ing more stuff pushes the previous 
+	" stuff down, so stuff is re-inserted in reverse order to account for 
+	" this.
 	call append(new_top, g:dot_elems)
 	call append(new_top, g:tilde_elems)
 	call append(new_top, g:bullet_elems)
 	call append(new_top, g:bang_elems)
-	" TODO: add color here
 
 	execute orig_line
 endfunction
 
-function Check_todo_sort()
-	call Get_curr_block_lines()
-	call Sort_block()
-	call Write_sorted()
+function s:_check_todo_sort()
+	call s:_get_curr_block_lines()
+	call s:_sort_block()
+	call s:_write_sorted()
 endfunction
 
-autocmd InsertLeave todo.txt call Check_todo_sort()
-
-" TODO: ensure that the cursor ends on the same line we start.  Maybe save
-" number and jump back?
+autocmd InsertLeave todo.txt call s:_check_todo_sort()
