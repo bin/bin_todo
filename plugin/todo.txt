@@ -1,0 +1,21 @@
+= asdf =
+	* asdf
+	! qwerty
+	~ uiop
+	. zxcv
+
+= asdf =
+	. asdf
+	~ qwerty
+	! uiop
+	* zxcv
+
+= asdf =
+
+	. asdf
+		+ test1
+		+ test2
+	~ qwerty
+		+ quack1
+		+ quack2
+	! uiop
