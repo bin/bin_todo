@@ -45,23 +45,23 @@ function s:_sort_block()
 	let g:dot_elems = []
 	while i >= g:top_line && i <= g:bottom_line
 		let line = getline(i)
-		if line =~# '\t\* .*'
-			call add(g:bullet_elems, line)
-			let last_type = 0
-		elseif line =~# '\t\! .*'
+		if line =~# '^\t\! .*'
 			call add(g:bang_elems, line)
+			let last_type = 0
+		elseif line =~# '^\t\* .*'
+			call add(g:bullet_elems, line)
 			let last_type = 1
-		elseif line =~# '\t\~ .*'
+		elseif line =~# '^\t\~ .*'
 			call add(g:tilde_elems, line)
 			let last_type = 2
-		elseif line =~# '\t\. .*'
+		elseif line =~# '^\t\. .*'
 			call add(g:dot_elems, line)
 			let last_type = 3
-		elseif line =~# '\t\t\+'
+		elseif line =~# '^\t\t\+'
 			if last_type == 0
-				call add(g:bullet_elems, line)
-			elseif last_type == 1
 				call add(g:bang_elems, line)
+			elseif last_type == 1
+				call add(g:bullet_elems, line)
 			elseif last_type == 2
 				call add(g:tilde_elems, line)
 			elseif last_type == 3

@@ -1,0 +1,1 @@
+autocmd BufNewFile,BufRead todo.txt setfiletype _bin_todo
