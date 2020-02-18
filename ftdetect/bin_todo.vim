@@ -1,1 +1,1 @@
-autocmd BufNewFile,BufRead todo.txt setfiletype _bin_todo
+autocmd BufNewFile,BufRead todo.txt setfiletype bin_todo

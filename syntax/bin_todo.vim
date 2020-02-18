@@ -37,3 +37,5 @@ highlight bin_todo_tilde ctermfg=DarkSeaGreen4 guifg=#5faf5f
 highlight bin_todo_dot ctermfg=Gray15 guifg=#262626
 highlight bin_todo_plus ctermfg=Orange3 guifg=#d78700
 highlight bin_dummy_test ctermfg=Orange3 guifg=#d78700
+
+let b:current_syntax = "bin_todo"
