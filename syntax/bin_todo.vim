@@ -27,6 +27,8 @@ syntax match bin_todo_plus start="^\t\t\+ .*"
 " Date matching is the same as bin_todo_block_date regex
 syntax match bin_todo_item_date start="^\t\!\|\*\|\~\|\. \[" end="\]" contains=bin_todo_date
 
+syntax match bin_dummy_test ".*"
+
 highlight bin_todo_block_date ctermfg=LightSkyBlue3 guifg=#87afd7
 highlight bin_todo_item_date ctermfg=SteelBlue1 guifg=#5fafff
 highlight bin_todo_bang ctermfg=IndianRed1 guifg=#d75f87
@@ -34,3 +36,4 @@ highlight bin_todo_bullet ctermfg=Gold1 guifg=#ffd700
 highlight bin_todo_tilde ctermfg=DarkSeaGreen4 guifg=#5faf5f
 highlight bin_todo_dot ctermfg=Gray15 guifg=#262626
 highlight bin_todo_plus ctermfg=Orange3 guifg=#d78700
+highlight bin_dummy_test ctermfg=Orange3 guifg=#d78700
