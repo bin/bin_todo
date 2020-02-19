@@ -18,11 +18,11 @@ syntax region bin_todo_block_date start="^= " end=" =" contains=bin_todo_date
 " Match any top-level item
 " syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
 " Match specific items
-syntax match bin_todo_bang "^\t\! .*" oneline
-syntax match bin_todo_bullet "^\t\* .*" oneline
-syntax match bin_todo_tilde "^\t\~ .*" oneline
-syntax match bin_todo_dot "^\t\. .*" oneline
-syntax match bin_todo_plus "^\t\t\+ .*" oneline
+syntax match bin_todo_bang "^\t\! .*$"
+syntax match bin_todo_bullet "^\t\* .*$"
+syntax match bin_todo_tilde "^\t\~ .*$"
+syntax match bin_todo_dot "^\t\. .*$"
+syntax match bin_todo_plus "^\t\t\+ .*$"
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
 syntax region bin_todo_item_date start="\[" end="\]" contains=bin_todo_date
