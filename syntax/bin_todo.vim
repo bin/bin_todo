@@ -11,7 +11,7 @@ syntax keyword bin_todo_keywords
 " Matches one or two digits for day, then a dot
 " Matches year group or not
 " 	If so, matches a dot, then two or four digits for year
-syntax match bin_todo_date "[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?"
+syntax match bin_todo_date "[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?" contained
 " Date for separating list blocks
 """syntax region bin_todo_block_date start="^= " end=" =$" contains=bin_todo_date
 
@@ -36,7 +36,7 @@ syntax region bin_todo_item_date start="\[" end="\]" contains=bin_todo_date
 """highlight bin_todo_dot ctermfg=235 guifg=#262626
 """highlight bin_todo_plus ctermfg=172 guifg=#d78700
 highlight bin_todo_item_date ctermfg=75 guifg=#5fafff
-highlight bin_todo_date ctermfg=75 guifg=#5fafff
+"highlight bin_todo_date ctermfg=75 guifg=#5fafff
 "highlight bin_dummy_test ctermfg=Orange3 guifg=#d78700
 
 let b:current_syntax = "bin_todo"
