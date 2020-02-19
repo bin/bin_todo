@@ -13,7 +13,7 @@ syntax keyword bin_todo_keywords
 " 	If so, matches a dot, then two or four digits for year
 """syntax region bin_todo_date start="[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?" end="" contained
 " Date for separating list blocks
-"""syntax region bin_todo_block_date start="^= " end=" =$" contains=bin_todo_date
+syntax region bin_todo_block_date start="^= [0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\? =$"
 
 " Match any top-level item
 " syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
@@ -29,7 +29,7 @@ syntax match bin_todo_item_date "\[[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?\]
 
 "syntax match bin_dummy_test ".*"
 
-"""highlight bin_todo_block_date ctermfg=109 guifg=#87afd7
+highlight bin_todo_block_date ctermfg=109 guifg=#87afd7
 """highlight bin_todo_bang ctermfg=203 guifg=#d75f87
 """highlight bin_todo_bullet ctermfg=220 guifg=#ffd700
 """highlight bin_todo_tilde ctermfg=65 guifg=#5faf5f
