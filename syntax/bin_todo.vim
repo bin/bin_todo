@@ -18,8 +18,8 @@ syntax match bin_todo_block_date "^= [0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?
 " Match any top-level item
 " syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
 " Match specific items
-"""syntax region bin_todo_bang start="^\t\! " end=" .*$" contains=bin_todo_block_date keepend
-"""syntax region bin_todo_bullet start="^\t\* " end=" .*$" contains=bin_todo_block_date keepend
+syntax match bin_todo_bang "^\t\! .*$" oneline
+syntax match bin_todo_bullet "^\t\* .*$" oneline
 """syntax region bin_todo_tilde start="^\t\~ " end=" .*$" contains=bin_todo_block_date keepend
 """syntax region bin_todo_dot start="^\t\. " end=" .*$" contains=bin_todo_block_date keepend
 """syntax region bin_todo_plus start="^\t\t\+ " end=" .*$" contains=bin_todo_block_date keepend
