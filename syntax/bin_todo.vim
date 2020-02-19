@@ -11,7 +11,7 @@ syntax keyword bin_todo_keywords
 " Matches one or two digits for day, then a dot
 " Matches year group or not
 " 	If so, matches a dot, then two or four digits for year
-syntax match bin_todo_date "[0-9]{1,2}\.[0-9]{1,2}\%(\.[0-9]{2,4}\)\?" contained
+syntax match bin_todo_date "[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?" contained
 " Date for separating list blocks
 syntax region bin_todo_block_date start="^= " end=" =" contains=bin_todo_date contained
 
