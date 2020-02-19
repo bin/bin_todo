@@ -16,7 +16,7 @@ syntax match bin_todo_date "[0-9]{1,2}\.[0-9]{1,2}\%(\.[0-9]{2,4}\)\?"
 syntax region bin_todo_block_date start="^= " end=" =" contains=bin_todo_date
 
 " Match any top-level item
-syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
+"syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
 " Match specific items
 syntax match bin_todo_bang "^\t\! .*"
 syntax match bin_todo_bullet "^\t\* .*"
