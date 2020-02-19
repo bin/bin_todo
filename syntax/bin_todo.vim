@@ -20,9 +20,9 @@ syntax region bin_todo_block_date start="^= " end=" =" contains=bin_todo_date
 " Match specific items
 syntax region bin_todo_bang start="^\t\! " end=" .*$" contains=bin_todo_block_date keepend
 syntax region bin_todo_bullet start="^\t\* " end=" .*$" contains=bin_todo_block_date keepend
-syntax region bin_todo_tilde "^\t\~ " end=" .*$" contains=bin_todo_block_date keepend
-syntax region bin_todo_dot "^\t\. " end=" .*$" contains=bin_todo_block_date keepend
-syntax region bin_todo_plus "^\t\t\+ " end=" .*$" contains=bin_todo_block_date keepend
+syntax region bin_todo_tilde start="^\t\~ " end=" .*$" contains=bin_todo_block_date keepend
+syntax region bin_todo_dot start="^\t\. " end=" .*$" contains=bin_todo_block_date keepend
+syntax region bin_todo_plus start="^\t\t\+ " end=" .*$" contains=bin_todo_block_date keepend
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
 syntax region bin_todo_item_date start="\[" end="\]" contains=bin_todo_date keepend
