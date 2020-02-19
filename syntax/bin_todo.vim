@@ -36,6 +36,7 @@ highlight bin_todo_tilde ctermfg=65 guifg=#5faf5f
 highlight bin_todo_dot ctermfg=235 guifg=#262626
 highlight bin_todo_plus ctermfg=172 guifg=#d78700
 highlight bin_todo_item_date ctermfg=75 guifg=#5fafff
+highlight bin_todo_date ctermfg=75 guifg=#5fafff
 "highlight bin_dummy_test ctermfg=Orange3 guifg=#d78700
 
 let b:current_syntax = "bin_todo"
