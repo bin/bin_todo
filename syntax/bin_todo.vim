@@ -13,7 +13,7 @@ syntax keyword bin_todo_keywords
 " 	If so, matches a dot, then two or four digits for year
 syntax match bin_todo_date "[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?" contained
 " Date for separating list blocks
-syntax region bin_todo_block_date start="^= " end=" =" contains=bin_todo_date contained
+syntax region bin_todo_block_date start="^= " end=" =$" contains=bin_todo_date
 
 " Match any top-level item
 " syntax region bin_todo_top_level start="^\t\!\|\*\|\~\|\. " contains=Date
@@ -25,7 +25,7 @@ syntax region bin_todo_dot start="^\t\. " end=" .*$" contains=bin_todo_block_dat
 syntax region bin_todo_plus start="^\t\t\+ " end=" .*$" contains=bin_todo_block_date keepend
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
-syntax region bin_todo_item_date start="\[" end="\]" contains=bin_todo_date keepend
+syntax region bin_todo_item_date start="\[" end="\]" contains=bin_todo_date
 
 "syntax match bin_dummy_test ".*"
 
