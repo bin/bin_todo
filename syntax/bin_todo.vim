@@ -30,8 +30,8 @@ syntax match bin_todo_item_date "\[[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?\]
 "syntax match bin_dummy_test ".*"
 
 highlight bin_todo_block_date ctermfg=109 guifg=#87afd7
-"""highlight bin_todo_bang ctermfg=203 guifg=#d75f87
-"""highlight bin_todo_bullet ctermfg=220 guifg=#ffd700
+highlight bin_todo_bang ctermfg=203 guifg=#d75f87
+highlight bin_todo_bullet ctermfg=220 guifg=#ffd700
 """highlight bin_todo_tilde ctermfg=65 guifg=#5faf5f
 """highlight bin_todo_dot ctermfg=235 guifg=#262626
 """highlight bin_todo_plus ctermfg=172 guifg=#d78700
