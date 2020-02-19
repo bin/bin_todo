@@ -22,7 +22,7 @@ syntax region bin_todo_bang start="^\t\! " end=".*$" contains=bin_todo_item_date
 syntax region bin_todo_bullet start="^\t\* " end=".*$" contains=bin_todo_item_date oneline
 syntax region bin_todo_tilde start="^\t\~ " end=" .*$" contains=bin_todo_block_date oneline
 syntax region bin_todo_dot start="^\t\. " end=" .*$" contains=bin_todo_block_date oneline
-syntax region bin_todo_plus start="^\t\t\+ " end=" .*$" contains=bin_todo_block_date oneline
+syntax region bin_todo_plus start="^\t\t+ " end=" .*$" contains=bin_todo_block_date oneline
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
 syntax match bin_todo_item_date "\[[0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?\]"
@@ -33,7 +33,7 @@ highlight bin_todo_block_date ctermfg=109 guifg=#87afd7
 highlight bin_todo_bang ctermfg=203 guifg=#d75f87
 highlight bin_todo_bullet ctermfg=220 guifg=#ffd700
 highlight bin_todo_tilde ctermfg=65 guifg=#5faf5f
-highlight bin_todo_dot ctermfg=235 guifg=#262626
+highlight bin_todo_dot ctermfg=242 guifg=#6c6c6c
 highlight bin_todo_plus ctermfg=172 guifg=#d78700
 highlight bin_todo_item_date ctermfg=75 guifg=#5fafff
 "highlight bin_todo_date ctermfg=75 guifg=#5fafff
