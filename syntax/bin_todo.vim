@@ -25,7 +25,7 @@ syntax match bin_todo_dot "^\t\. .*" oneline
 syntax match bin_todo_plus "^\t\t\+ .*" oneline
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
-syntax region bin_todo_item_date start="^\t\!\|\*\|\~\|\. \[" end="\]" contains=bin_todo_date oneline
+syntax region bin_todo_item_date start="^\t\!\|\*\|\~\|\. \[" end="\]" contains=bin_todo_date
 
 "syntax match bin_dummy_test ".*"
 
