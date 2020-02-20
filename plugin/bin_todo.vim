@@ -108,7 +108,8 @@ endfunction
 
 function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
-	call s:_write_sorted(s:_sort_block())
+	let s:sorted = s:_sort_block()
+	call s:_write_sorted(s:sorted)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
