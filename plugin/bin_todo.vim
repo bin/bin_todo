@@ -71,9 +71,10 @@ function s:_sort_block()
 
 		let i += 1
 	endwhile
+	return [dot_elems, tilde_elems, bullet_elems, bang_elems]
 endfunction
 
-function s:_write_sorted()
+function s:_write_sorted(sorted)
 	" store starting position
 	"let orig_line = line('.')
 	"let orig_col = col('.')
@@ -91,10 +92,14 @@ function s:_write_sorted()
 	" doesn't move the cursor.  Append()ing more stuff pushes the previous 
 	" stuff down, so stuff is re-inserted in reverse order to account for 
 	" this.
-	call append(new_top, g:dot_elems)
-	call append(new_top, g:tilde_elems)
-	call append(new_top, g:bullet_elems)
-	call append(new_top, g:bang_elems)
+	"call append(new_top, g:dot_elems)
+	"call append(new_top, g:tilde_elems)
+	"call append(new_top, g:bullet_elems)
+	"call append(new_top, g:bang_elems)
+	call append(new_top, sorted[0])
+	call append(new_top, sorted[1])
+	call append(new_top, sorted[2])
+	call append(new_top, sorted[3])
 
 	"execute orig_line
 	"call cursor(orig_line, orig_col)
@@ -103,8 +108,7 @@ endfunction
 
 function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
-	call s:_sort_block()
-	call s:_write_sorted()
+	call s:_write_sorted(s:_sort_block())
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
