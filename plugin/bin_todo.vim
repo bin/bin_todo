@@ -39,39 +39,39 @@ function s:_sort_block()
 	" in-place sorting?
 	let i = g:top_line
 	let last_type = ""
-	let g:bullet_elems = []
-	let g:bang_elems = []
-	let g:tilde_elems = []
-	let g:dot_elems = []
+	let l:bullet_elems = []
+	let l:bang_elems = []
+	let l:tilde_elems = []
+	let l:dot_elems = []
 	while i >= g:top_line && i <= g:bottom_line
 		let line = getline(i)
 		if line =~# '^\t\! .*'
-			call add(g:bang_elems, line)
+			call add(l:bang_elems, line)
 			let last_type = 0
 		elseif line =~# '^\t\* .*'
-			call add(g:bullet_elems, line)
+			call add(l:bullet_elems, line)
 			let last_type = 1
 		elseif line =~# '^\t\~ .*'
-			call add(g:tilde_elems, line)
+			call add(l:tilde_elems, line)
 			let last_type = 2
 		elseif line =~# '^\t\. .*'
-			call add(g:dot_elems, line)
+			call add(l:dot_elems, line)
 			let last_type = 3
 		elseif line =~# '^\t\t\+'
 			if last_type == 0
-				call add(g:bang_elems, line)
+				call add(l:bang_elems, line)
 			elseif last_type == 1
-				call add(g:bullet_elems, line)
+				call add(l:bullet_elems, line)
 			elseif last_type == 2
-				call add(g:tilde_elems, line)
+				call add(l:tilde_elems, line)
 			elseif last_type == 3
-				call add(g:dot_elems, line)
+				call add(l:dot_elems, line)
 			endif
 		endif
 
 		let i += 1
 	endwhile
-	return [dot_elems, tilde_elems, bullet_elems, bang_elems]
+	return [l:dot_elems, l:tilde_elems, l:bullet_elems, l:bang_elems]
 endfunction
 
 function s:_write_sorted(sorted)
