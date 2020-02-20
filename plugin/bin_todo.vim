@@ -29,7 +29,7 @@ function s:_get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-function s:_sort_block()
+function s:_sort_block(depth)
 	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
 	" symbol and append each line to the appropriate list.
 	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
@@ -37,15 +37,26 @@ function s:_sort_block()
 	" item.
 	" TODO: Might there be a more-efficient sort, even if I don't care about 
 	" in-place sorting?
-	let i = g:top_line
+	let s:i = g:top_line
 	let last_type = ""
 	let l:bullet_elems = []
 	let l:bang_elems = []
 	let l:tilde_elems = []
 	let l:dot_elems = []
-	while i >= g:top_line && i <= g:bottom_line
+	" let l:depth = 0
+	while s:i >= g:top_line && i <= g:bottom_line
 		let line = getline(i)
-		if line =~# '^\t\! .*'
+		" count tabs prefixing stuff
+		let s:tabs = 0
+		for s:char in split(line, '\zs')
+			if s:char == s:tabs
+				s:tabs += 1
+			else
+				break
+			endif
+		endfor
+		
+		if line =~# '^\t*\! .*'
 			call add(l:bang_elems, line)
 			let last_type = 0
 		elseif line =~# '^\t\* .*'
@@ -57,7 +68,7 @@ function s:_sort_block()
 		elseif line =~# '^\t\. .*'
 			call add(l:dot_elems, line)
 			let last_type = 3
-		elseif line =~# '^\t\t\+'
+		elseif line =~# '^\t\t+'
 			if last_type == 0
 				call add(l:bang_elems, line)
 			elseif last_type == 1
