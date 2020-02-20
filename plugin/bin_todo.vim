@@ -74,8 +74,10 @@ function s:_sort_block()
 endfunction
 
 function s:_write_sorted()
-	" store starting line
-	let orig_line = line('.')
+	" store starting position
+	"let orig_line = line('.')
+	"let orig_col = col('.')
+	let orig_pos = winsaveview()
 	let new_top = g:top_line - 1
 	" jump to top line of block
 	execute g:top_line
@@ -94,7 +96,9 @@ function s:_write_sorted()
 	call append(new_top, g:bullet_elems)
 	call append(new_top, g:bang_elems)
 
-	execute orig_line
+	"execute orig_line
+	"call cursor(orig_line, orig_col)
+	call winrestview(orig_pos)
 endfunction
 
 function s:_check_todo_sort()
