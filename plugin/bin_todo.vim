@@ -30,7 +30,7 @@ function s:_get_curr_block_lines()
 endfunction
 
 "function s:_sort_block(depth)
-function s:_sort_block()
+function s:_sort_block(depth, pos)
 	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
 	" symbol and append each line to the appropriate list.
 	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
@@ -38,16 +38,15 @@ function s:_sort_block()
 	" item.
 	" TODO: Might there be a more-efficient sort, even if I don't care about 
 	" in-place sorting?
-	let s:i = g:top_line
+	let s:i = g:top_line - a:pos
 	let last_type = ""
 	let l:bullet_elems = []
 	let l:bang_elems = []
 	let l:tilde_elems = []
 	let l:dot_elems = []
 	" let l:depth = 0
-	while s:i >= g:top_line && s:i <= g:bottom_line
+	while s:i <= g:bottom_line
 		let line = getline(s:i)
-		" count tabs prefixing stuff
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
 			if s:char == s:tabs
@@ -56,43 +55,57 @@ function s:_sort_block()
 				break
 			endif
 		endfor
-		"if s:tabs > (a:depth + 1)
-		"	" sub-item of current list
-		"endif
-		
-		if line =~# '^\t*\! .*'
-			call add(l:bang_elems, line)
-			let last_type = 0
-		elseif line =~# '^\t*\* .*'
-			call add(l:bullet_elems, line)
-			let last_type = 1
-		elseif line =~# '^\t*\~ .*'
-			call add(l:tilde_elems, line)
-			let last_type = 2
-		elseif line =~# '^\t*\. .*'
-			call add(l:dot_elems, line)
-			let last_type = 3
-		elseif line =~# '^\t\t+'
-			if last_type == 0
+		if s:tabs == a:depth + 1
+			if line =~# '^\t*\! .*'
 				call add(l:bang_elems, line)
-			elseif last_type == 1
+				let last_type = 0
+			elseif line =~# '^\t*\* .*'
 				call add(l:bullet_elems, line)
-			elseif last_type == 2
+				let last_type = 1
+			elseif line =~# '^\t*\~ .*'
 				call add(l:tilde_elems, line)
-			elseif last_type == 3
+				let last_type = 2
+			elseif line =~# '^\t*\. .*'
 				call add(l:dot_elems, line)
+				let last_type = 3
 			endif
+		elseif tabs > a:depth + 1
+			if last_type == 0
+				call add(l:bang_elems, s:_sort_block(depth + 1, i + 1))
+			elseif last_type == 1
+				call add(l:bullet_elems, s:_sort_block(depth + 1, i + 1))
+			elseif last_type == 2
+				call add(l:tilde_elems, s:_sort_block(depth + 1, i + 1))
+			elseif last_type == 3
+				call add(l:dot_elems, s:_sort_block(depth + 1, pos + 1))
+			endif
+			i += g:num_processed
+		else
+			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
+			let g:num_processed = i + 1
 		endif
-
 		let s:i += 1
 	endwhile
-	return [l:dot_elems, l:tilde_elems, l:bullet_elems, l:bang_elems]
+	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
+endfunction
+
+" Code from bairui@#vim.freenode
+" https://gist.github.com/3322468
+function s:_flatten_sorted(sorted)
+	let val = []
+	for elem in a:sorted
+		if type(elem) == type([])
+			call extend(val, s:_flatten_sorted(elem))
+		else
+			call add(val, elem)
+		endif
+		unlet elem
+	endfor
+	return val
 endfunction
 
 function s:_write_sorted(sorted)
 	" store starting position
-	"let orig_line = line('.')
-	"let orig_col = col('.')
 	let orig_pos = winsaveview()
 	let new_top = g:top_line - 1
 	" jump to top line of block
@@ -103,27 +116,16 @@ function s:_write_sorted(sorted)
 	execute "d" . difference
 
 	" Output re-ordered block.
-	" append() appends to the current line by inserting below it.  It 
-	" doesn't move the cursor.  Append()ing more stuff pushes the previous 
-	" stuff down, so stuff is re-inserted in reverse order to account for 
-	" this.
-	"call append(new_top, g:dot_elems)
-	"call append(new_top, g:tilde_elems)
-	"call append(new_top, g:bullet_elems)
-	"call append(new_top, g:bang_elems)
-	call append(new_top, a:sorted[0])
-	call append(new_top, a:sorted[1])
-	call append(new_top, a:sorted[2])
-	call append(new_top, a:sorted[3])
+	call append(new_top, a:sorted)
 
-	"execute orig_line
-	"call cursor(orig_line, orig_col)
+	" Restore window position
 	call winrestview(orig_pos)
 endfunction
 
 function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
-	let s:sorted = s:_sort_block()
+	let s:sorted = s:_sort_block(0, 0)
+	let s:flat_sorted = s:_flatten_sorted(s:sorted)
 	call s:_write_sorted(s:sorted)
 endfunction
 
