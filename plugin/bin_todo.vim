@@ -45,8 +45,8 @@ function s:_sort_block()
 	let l:tilde_elems = []
 	let l:dot_elems = []
 	" let l:depth = 0
-	while s:i >= g:top_line && i <= g:bottom_line
-		let line = getline(i)
+	while s:i >= g:top_line && s:i <= g:bottom_line
+		let line = getline(s:i)
 		" count tabs prefixing stuff
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
