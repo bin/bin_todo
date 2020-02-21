@@ -29,7 +29,8 @@ function s:_get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-function s:_sort_block(depth)
+"function s:_sort_block(depth)
+function s:_sort_block()
 	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
 	" symbol and append each line to the appropriate list.
 	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
@@ -55,29 +56,32 @@ function s:_sort_block(depth)
 				break
 			endif
 		endfor
+		if s:tabs > (a:depth + 1)
+			" sub-item of current list
+		endif
 		
 		if line =~# '^\t*\! .*'
 			call add(l:bang_elems, line)
 			let last_type = 0
-		elseif line =~# '^\t\* .*'
+		elseif line =~# '^\t*\* .*'
 			call add(l:bullet_elems, line)
 			let last_type = 1
-		elseif line =~# '^\t\~ .*'
+		elseif line =~# '^\t*\~ .*'
 			call add(l:tilde_elems, line)
 			let last_type = 2
-		elseif line =~# '^\t\. .*'
+		elseif line =~# '^\t*\. .*'
 			call add(l:dot_elems, line)
 			let last_type = 3
-		elseif line =~# '^\t\t+'
-			if last_type == 0
-				call add(l:bang_elems, line)
-			elseif last_type == 1
-				call add(l:bullet_elems, line)
-			elseif last_type == 2
-				call add(l:tilde_elems, line)
-			elseif last_type == 3
-				call add(l:dot_elems, line)
-			endif
+		"elseif line =~# '^\t\t+'
+		"	if last_type == 0
+		"		call add(l:bang_elems, line)
+		"	elseif last_type == 1
+		"		call add(l:bullet_elems, line)
+		"	elseif last_type == 2
+		"		call add(l:tilde_elems, line)
+		"	elseif last_type == 3
+		"		call add(l:dot_elems, line)
+		"	endif
 		endif
 
 		let i += 1
