@@ -84,7 +84,7 @@ function s:_sort_block()
 		"	endif
 		endif
 
-		let i += 1
+		let s:i += 1
 	endwhile
 	return [l:dot_elems, l:tilde_elems, l:bullet_elems, l:bang_elems]
 endfunction
