@@ -49,7 +49,7 @@ function s:_sort_block(depth, pos)
 		let line = getline(s:i)
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
-			if s:char == s:tabs
+			if s:char =~# '\t'
 				let s:tabs += 1
 			else
 				break
@@ -89,9 +89,8 @@ function s:_sort_block(depth, pos)
 	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 endfunction
 
-" Code from bairui@#vim.freenode
-" https://gist.github.com/3322468
 function s:_flatten_sorted(sorted)
+" https://gist.github.com/3322468
 	let val = []
 	for elem in a:sorted
 		if type(elem) == type([])
@@ -126,7 +125,7 @@ function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
 	let s:sorted = s:_sort_block(0, 0)
 	let s:flat_sorted = s:_flatten_sorted(s:sorted)
-	call s:_write_sorted(s:sorted)
+	call s:_write_sorted(s:flag_sorted)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
