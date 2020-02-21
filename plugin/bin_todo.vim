@@ -56,9 +56,9 @@ function s:_sort_block()
 				break
 			endif
 		endfor
-		if s:tabs > (a:depth + 1)
-			" sub-item of current list
-		endif
+		"if s:tabs > (a:depth + 1)
+		"	" sub-item of current list
+		"endif
 		
 		if line =~# '^\t*\! .*'
 			call add(l:bang_elems, line)
