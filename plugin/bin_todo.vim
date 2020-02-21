@@ -72,16 +72,16 @@ function s:_sort_block()
 		elseif line =~# '^\t*\. .*'
 			call add(l:dot_elems, line)
 			let last_type = 3
-		"elseif line =~# '^\t\t+'
-		"	if last_type == 0
-		"		call add(l:bang_elems, line)
-		"	elseif last_type == 1
-		"		call add(l:bullet_elems, line)
-		"	elseif last_type == 2
-		"		call add(l:tilde_elems, line)
-		"	elseif last_type == 3
-		"		call add(l:dot_elems, line)
-		"	endif
+		elseif line =~# '^\t\t+'
+			if last_type == 0
+				call add(l:bang_elems, line)
+			elseif last_type == 1
+				call add(l:bullet_elems, line)
+			elseif last_type == 2
+				call add(l:tilde_elems, line)
+			elseif last_type == 3
+				call add(l:dot_elems, line)
+			endif
 		endif
 
 		let s:i += 1
