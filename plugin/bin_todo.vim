@@ -51,7 +51,7 @@ function s:_sort_block()
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
 			if s:char == s:tabs
-				s:tabs += 1
+				let s:tabs += 1
 			else
 				break
 			endif
