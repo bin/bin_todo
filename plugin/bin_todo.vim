@@ -77,10 +77,10 @@ function s:_sort_block(depth, pos)
 			elseif last_type == 3
 				call add(l:dot_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			endif
-			let i += g:num_processed
+			let s:i += g:num_processed
 		else
 			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
-			let g:num_processed = i + 1
+			let g:num_processed = s:i + 1
 		endif
 		let s:i += 1
 	endwhile
