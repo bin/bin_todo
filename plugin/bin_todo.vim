@@ -69,13 +69,13 @@ function s:_sort_block(depth, pos)
 			endif
 		elseif s:tabs > a:depth + 1
 			if last_type == 0
-				call add(l:bang_elems, s:_sort_block(a:depth + 1, i + 1))
+				call add(l:bang_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			elseif last_type == 1
-				call add(l:bullet_elems, s:_sort_block(a:depth + 1, i + 1))
+				call add(l:bullet_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			elseif last_type == 2
-				call add(l:tilde_elems, s:_sort_block(a:depth + 1, i + 1))
+				call add(l:tilde_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			elseif last_type == 3
-				call add(l:dot_elems, s:_sort_block(a:depth + 1, i + 1))
+				call add(l:dot_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			endif
 			let i += g:num_processed
 		else
