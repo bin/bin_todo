@@ -67,7 +67,7 @@ function s:_sort_block(depth, pos)
 				call add(l:dot_elems, line)
 				let last_type = 3
 			endif
-		elseif tabs > a:depth + 1
+		elseif s:tabs > a:depth + 1
 			if last_type == 0
 				call add(l:bang_elems, s:_sort_block(depth + 1, i + 1))
 			elseif last_type == 1
