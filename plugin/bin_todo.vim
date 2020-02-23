@@ -43,18 +43,17 @@ function s:_sort_block(depth, pos)
 	let l:bang_elems = []
 	let l:tilde_elems = []
 	let l:dot_elems = []
-	" let l:depth = 0
 	while s:i <= g:bottom_line
-"		let line = getline(s:i)
-"		let s:tabs = 0
-"		for s:char in split(line, '\zs')
+		let line = getline(s:i)
+		let s:tabs = 0
+		for s:char in split(line, '\zs')
 "			if s:char =~# '\t'
 "				let s:tabs += 1
 "			else
 "				break
 "			endif
-"		endfor
-"		if s:tabs == a:depth + 1
+		endfor
+		if s:tabs == a:depth + 1
 "			if line =~# '^\t*\! .*'
 "				call add(l:bang_elems, line)
 "				let last_type = 0
@@ -68,7 +67,7 @@ function s:_sort_block(depth, pos)
 "				call add(l:dot_elems, line)
 "				let last_type = 3
 "			endif
-"		elseif tabs > a:depth + 1
+		elseif tabs > a:depth + 1
 "			if last_type == 0
 "				call add(l:bang_elems, s:_sort_block(depth + 1, i + 1))
 "			elseif last_type == 1
@@ -79,11 +78,11 @@ function s:_sort_block(depth, pos)
 "				call add(l:dot_elems, s:_sort_block(depth + 1, pos + 1))
 "			endif
 "			i += g:num_processed
-"		else
+		else
 "			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 "			let g:num_processed = i + 1
-"		endif
-"		let s:i += 1
+		endif
+		let s:i += 1
 	endwhile
 	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 endfunction
