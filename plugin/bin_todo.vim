@@ -102,23 +102,23 @@ function s:_flatten_sorted(sorted)
 	return val
 endfunction
 
-function s:_write_sorted(sorted)
-	" store starting position
-	let orig_pos = winsaveview()
-	let new_top = g:top_line - 1
-	" jump to top line of block
-	execute g:top_line
-	" delete old block
-	let difference = g:bottom_line - g:top_line
-	let difference += 1
-	execute "d" . difference
-
-	" Output re-ordered block.
-	call append(new_top, a:sorted)
-
-	" Restore window position
-	call winrestview(orig_pos)
-endfunction
+"function s:_write_sorted(sorted)
+"	" store starting position
+"	let orig_pos = winsaveview()
+"	let new_top = g:top_line - 1
+"	" jump to top line of block
+"	execute g:top_line
+"	" delete old block
+"	let difference = g:bottom_line - g:top_line
+"	let difference += 1
+"	execute "d" . difference
+"
+"	" Output re-ordered block.
+"	call append(new_top, a:sorted)
+"
+"	" Restore window position
+"	call winrestview(orig_pos)
+"endfunction
 
 function s:_check_todo_sort()
 	"call s:_get_curr_block_lines()
