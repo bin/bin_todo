@@ -121,11 +121,10 @@ function s:_write_sorted(sorted)
 endfunction
 
 function s:_check_todo_sort()
-	call s:_get_curr_block_lines()
-	let s:sorted = s:_sort_block(0, 0)
-	let s:flat_sorted = s:_flatten_sorted(s:sorted)
-	call s:_write_sorted(s:flag_sorted)
+	"call s:_get_curr_block_lines()
+	"let s:sorted = s:_sort_block(0, 0)
+	"let s:flat_sorted = s:_flatten_sorted(s:sorted)
+	"call s:_write_sorted(s:flag_sorted)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
-endfunction
