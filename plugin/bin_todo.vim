@@ -68,6 +68,7 @@ function s:_sort_block(depth, pos)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
+			echo "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type
 			if last_type == 0
 				call add(l:bang_elems, s:_sort_block(a:depth + 1, s:i + 1))
 			elseif last_type == 1
@@ -124,7 +125,6 @@ function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
 	let s:sorted = s:_sort_block(0, 0)
 	let s:flat_sorted = s:_flatten_sorted(s:sorted)
-	echo s:flat_sorted
 	call s:_write_sorted(s:flat_sorted)
 endfunction
 
