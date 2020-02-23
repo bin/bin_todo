@@ -84,7 +84,6 @@ function s:_sort_block(depth, pos)
 		endif
 		let s:i += 1
 	endwhile
-	echo [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 endfunction
 
@@ -125,6 +124,7 @@ function s:_check_todo_sort()
 	call s:_get_curr_block_lines()
 	let s:sorted = s:_sort_block(0, 0)
 	let s:flat_sorted = s:_flatten_sorted(s:sorted)
+	echo s:flat_sorted
 	call s:_write_sorted(s:flat_sorted)
 endfunction
 
