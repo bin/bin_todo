@@ -29,22 +29,22 @@ function s:_get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-"function s:_sort_block(depth, pos)
-"	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
-"	" symbol and append each line to the appropriate list.
-"	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
-"	" When we hit a sub-item, append it to the list of the last top-level 
-"	" item.
-"	" TODO: Might there be a more-efficient sort, even if I don't care about 
-"	" in-place sorting?
-"	let s:i = g:top_line - a:pos
-"	let last_type = ""
-"	let l:bullet_elems = []
-"	let l:bang_elems = []
-"	let l:tilde_elems = []
-"	let l:dot_elems = []
-"	" let l:depth = 0
-"	while s:i <= g:bottom_line
+function s:_sort_block(depth, pos)
+	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
+	" symbol and append each line to the appropriate list.
+	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
+	" When we hit a sub-item, append it to the list of the last top-level 
+	" item.
+	" TODO: Might there be a more-efficient sort, even if I don't care about 
+	" in-place sorting?
+	let s:i = g:top_line - a:pos
+	let last_type = ""
+	let l:bullet_elems = []
+	let l:bang_elems = []
+	let l:tilde_elems = []
+	let l:dot_elems = []
+	" let l:depth = 0
+	while s:i <= g:bottom_line
 "		let line = getline(s:i)
 "		let s:tabs = 0
 "		for s:char in split(line, '\zs')
@@ -84,9 +84,9 @@ endfunction
 "			let g:num_processed = i + 1
 "		endif
 "		let s:i += 1
-"	endwhile
-"	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
-"endfunction
+	endwhile
+	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
+endfunction
 
 function s:_flatten_sorted(sorted)
 " https://gist.github.com/3322468
