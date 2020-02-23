@@ -54,19 +54,19 @@ function s:_sort_block(depth, pos)
 			endif
 		endfor
 		if s:tabs == a:depth + 1
-"			if line =~# '^\t*\! .*'
-"				call add(l:bang_elems, line)
-"				let last_type = 0
-"			elseif line =~# '^\t*\* .*'
-"				call add(l:bullet_elems, line)
-"				let last_type = 1
-"			elseif line =~# '^\t*\~ .*'
-"				call add(l:tilde_elems, line)
-"				let last_type = 2
-"			elseif line =~# '^\t*\. .*'
-"				call add(l:dot_elems, line)
-"				let last_type = 3
-"			endif
+			if line =~# '^\t*\! .*'
+				call add(l:bang_elems, line)
+				let last_type = 0
+			elseif line =~# '^\t*\* .*'
+				call add(l:bullet_elems, line)
+				let last_type = 1
+			elseif line =~# '^\t*\~ .*'
+				call add(l:tilde_elems, line)
+				let last_type = 2
+			elseif line =~# '^\t*\. .*'
+				call add(l:dot_elems, line)
+				let last_type = 3
+			endif
 		elseif tabs > a:depth + 1
 "			if last_type == 0
 "				call add(l:bang_elems, s:_sort_block(depth + 1, i + 1))
