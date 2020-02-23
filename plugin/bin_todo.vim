@@ -29,7 +29,6 @@ function s:_get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-"function s:_sort_block(depth)
 function s:_sort_block(depth, pos)
 	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
 	" symbol and append each line to the appropriate list.
