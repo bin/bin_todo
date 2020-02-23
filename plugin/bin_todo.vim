@@ -47,11 +47,11 @@ function s:_sort_block(depth, pos)
 		let line = getline(s:i)
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
-"			if s:char =~# '\t'
-"				let s:tabs += 1
-"			else
-"				break
-"			endif
+			if s:char =~# '\t'
+				let s:tabs += 1
+			else
+				break
+			endif
 		endfor
 		if s:tabs == a:depth + 1
 "			if line =~# '^\t*\! .*'
