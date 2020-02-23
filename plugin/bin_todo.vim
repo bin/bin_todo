@@ -129,6 +129,3 @@ endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
 endfunction
-endfunction
-endfunction
-endfunction
