@@ -84,6 +84,7 @@ function s:_sort_block(depth, pos)
 		endif
 		let s:i += 1
 	endwhile
+	echo [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 endfunction
 
