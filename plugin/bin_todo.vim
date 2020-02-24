@@ -53,7 +53,7 @@ function s:_sort_block(depth, pos)
 				break
 			endif
 		endfor
-		let s:msg = "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type
+		let s:msg = "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . s:i
 		echoerr s:msg
 		if s:tabs == a:depth + 1
 			if line =~# '^\t*\! .*'
