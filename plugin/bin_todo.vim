@@ -59,7 +59,8 @@ function s:_sort_block(depth, pos)
 		endfor
 		echoerr "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		if s:tabs == a:depth + 1
-			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+			"let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\=submatch(0)', '')
 			echoerr "date: " . date
 			if line =~# '^\t*\! .*'
 				call add(l:bang_elems_nodate, line)
