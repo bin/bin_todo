@@ -39,10 +39,14 @@ function s:_sort_block(depth, pos)
 	" in-place sorting?
 	let g:num_processed = a:pos
 	let last_type = ""
-	let l:bullet_elems = []
-	let l:bang_elems = []
-	let l:tilde_elems = []
-	let l:dot_elems = []
+	let l:bullet_nodate_elems = []
+	let l:bullet_date_elems = []
+	let l:bang_nodate_elems = []
+	let l:bang_date_elems = []
+	let l:tilde_nodate_elems = []
+	let l:tilde_date_elems = []
+	let l:dot_nodate_elems = []
+	let l:dot_date_elems = []
 	while g:num_processed <= g:bottom_line
 		let line = getline(g:num_processed)
 		let s:tabs = 0
@@ -55,6 +59,8 @@ function s:_sort_block(depth, pos)
 		endfor
 		echoerr "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		if s:tabs == a:depth + 1
+			let date = echo line | %s/.*\[\([0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?\)\].*/\1/g
+			echoerr "date: " . date
 			if line =~# '^\t*\! .*'
 				call add(l:bang_elems, line)
 				let last_type = 0
@@ -80,7 +86,6 @@ function s:_sort_block(depth, pos)
 				call add(l:dot_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			endif
 		else
-			"let g:num_processed += 1
 			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 		endif
 		let g:num_processed += 1
