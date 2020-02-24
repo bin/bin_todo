@@ -39,14 +39,14 @@ function s:_sort_block(depth, pos)
 	" in-place sorting?
 	let g:num_processed = a:pos
 	let last_type = ""
-	let l:bullet_nodate_elems = []
-	let l:bullet_date_elems = []
-	let l:bang_nodate_elems = []
-	let l:bang_date_elems = []
-	let l:tilde_nodate_elems = []
-	let l:tilde_date_elems = []
-	let l:dot_nodate_elems = []
-	let l:dot_date_elems = []
+	let l:bullet_elems_nodate = []
+	let l:bullet_elems_date = []
+	let l:bang_elems_nodate = []
+	let l:bang_elems_date = []
+	let l:tilde_elems_nodate = []
+	let l:tilde_elems_date = []
+	let l:dot_elems_nodate = []
+	let l:dot_elems_date= []
 	while g:num_processed <= g:bottom_line
 		let line = getline(g:num_processed)
 		let s:tabs = 0
@@ -59,38 +59,38 @@ function s:_sort_block(depth, pos)
 		endfor
 		echoerr "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		if s:tabs == a:depth + 1
-			let date = substitute(line, ".*\[\([0-9]\{1,2}\.[0-9]\{1,2}\(\.[0-9]\{2,4}\)\?\)\].*", "\1", "")
+			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
 			echoerr "date: " . date
 			if line =~# '^\t*\! .*'
-				call add(l:bang_elems, line)
+				call add(l:bang_elems_nodate, line)
 				let last_type = 0
 			elseif line =~# '^\t*\* .*'
-				call add(l:bullet_elems, line)
+				call add(l:bullet_elems_nodate, line)
 				let last_type = 1
 			elseif line =~# '^\t*\~ .*'
-				call add(l:tilde_elems, line)
+				call add(l:tilde_elems_nodate, line)
 				let last_type = 2
 			elseif line =~# '^\t*\. .*'
-				call add(l:dot_elems, line)
+				call add(l:dot_elems_nodate, line)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
 			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . g:num_processed
 			if last_type == 0
-				call add(l:bang_elems, s:_sort_block(a:depth + 1, g:num_processed))
+				call add(l:bang_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 1
-				call add(l:bullet_elems, s:_sort_block(a:depth + 1, g:num_processed))
+				call add(l:bullet_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 2
-				call add(l:tilde_elems, s:_sort_block(a:depth + 1, g:num_processed))
+				call add(l:tilde_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 3
-				call add(l:dot_elems, s:_sort_block(a:depth + 1, g:num_processed))
+				call add(l:dot_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
 			endif
 		else
-			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
+			return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
 		endif
 		let g:num_processed += 1
 	endwhile
-	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
+	return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
 endfunction
 
 function s:_flatten_sorted(sorted)
