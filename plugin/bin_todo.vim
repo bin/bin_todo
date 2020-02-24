@@ -70,15 +70,15 @@ function s:_sort_block(depth, pos)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
-			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . (s:i + 1)
+			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . s:i
 			if last_type == 0
-				call add(l:bang_elems, s:_sort_block(a:depth + 1, s:i + 1))
+				call add(l:bang_elems, s:_sort_block(a:depth + 1, s:i))
 			elseif last_type == 1
-				call add(l:bullet_elems, s:_sort_block(a:depth + 1, s:i + 1))
+				call add(l:bullet_elems, s:_sort_block(a:depth + 1, s:i))
 			elseif last_type == 2
-				call add(l:tilde_elems, s:_sort_block(a:depth + 1, s:i + 1))
+				call add(l:tilde_elems, s:_sort_block(a:depth + 1, s:i))
 			elseif last_type == 3
-				call add(l:dot_elems, s:_sort_block(a:depth + 1, s:i + 1))
+				call add(l:dot_elems, s:_sort_block(a:depth + 1, s:i))
 			endif
 			let s:i += g:num_processed
 		else
