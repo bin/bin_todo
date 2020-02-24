@@ -47,6 +47,8 @@ function s:_sort_block(depth, pos)
 	let l:tilde_elems_date = []
 	let l:dot_elems_nodate = []
 	let l:dot_elems_date= []
+	let l:date = ""
+	let l:has_date = 0
 	while g:num_processed <= g:bottom_line
 		let line = getline(g:num_processed)
 		let s:tabs = 0
@@ -57,11 +59,16 @@ function s:_sort_block(depth, pos)
 				break
 			endif
 		endfor
-		echoerr "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		if s:tabs == a:depth + 1
 			"let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\=submatch(1)', '')
-			echoerr "date: " . date
+			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+			" If no date is found, substitute() returns the whole line 
+			" so first char will be tab
+			if split(line, '\zs')[0] != '\t'
+				let l:has_date = 1
+			else
+				let l:has_date = 0
+			endif
 			if line =~# '^\t*\! .*'
 				call add(l:bang_elems_nodate, line)
 				let last_type = 0
@@ -76,7 +83,6 @@ function s:_sort_block(depth, pos)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
-			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . g:num_processed
 			if last_type == 0
 				call add(l:bang_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 1
@@ -124,6 +130,18 @@ function s:_write_sorted(sorted)
 
 	" Restore window position
 	call winrestview(orig_pos)
+endfunction
+
+" list orig - original list
+" list in - list to insert
+" index - insert before this index
+" returns joined list
+function s:_insert_list_before_index(orig, in, index)
+	let end = index - 1
+	let tmp = orig[0:end]
+	let tmp += in
+	let tmp += [in:]
+	return tmp
 endfunction
 
 function s:_check_todo_sort()
