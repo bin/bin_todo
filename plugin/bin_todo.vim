@@ -37,7 +37,8 @@ function s:_sort_block(depth, pos)
 	" item.
 	" TODO: Might there be a more-efficient sort, even if I don't care about 
 	" in-place sorting?
-	let s:i = a:pos - g:top_line
+	"let s:i = g:top_line - a:pos
+	let s:i = a:pos
 	let last_type = ""
 	let l:bullet_elems = []
 	let l:bang_elems = []
