@@ -53,8 +53,7 @@ function s:_sort_block(depth, pos)
 				break
 			endif
 		endfor
-		"let s:msg = "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
-		"echoerr s:msg
+		echoerr "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		if s:tabs == a:depth + 1
 			if line =~# '^\t*\! .*'
 				call add(l:bang_elems, line)
@@ -70,7 +69,7 @@ function s:_sort_block(depth, pos)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
-			"echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . g:num_processed
+			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . g:num_processed
 			if last_type == 0
 				call add(l:bang_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 1
