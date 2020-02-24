@@ -80,7 +80,7 @@ function s:_sort_block(depth, pos)
 				call add(l:dot_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			endif
 		else
-			let g:num_processed += 1
+			"let g:num_processed += 1
 			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 		endif
 		let g:num_processed += 1
