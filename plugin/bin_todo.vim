@@ -37,15 +37,14 @@ function s:_sort_block(depth, pos)
 	" item.
 	" TODO: Might there be a more-efficient sort, even if I don't care about 
 	" in-place sorting?
-	"let s:i = g:top_line - a:pos
-	let s:i = a:pos
+	let g:num_processed = a:pos
 	let last_type = ""
 	let l:bullet_elems = []
 	let l:bang_elems = []
 	let l:tilde_elems = []
 	let l:dot_elems = []
-	while s:i <= g:bottom_line
-		let line = getline(s:i)
+	while g:num_processed <= g:bottom_line
+		let line = getline(g:num_processed)
 		let s:tabs = 0
 		for s:char in split(line, '\zs')
 			if s:char =~# '\t'
@@ -54,7 +53,7 @@ function s:_sort_block(depth, pos)
 				break
 			endif
 		endfor
-		let s:msg = "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . s:i
+		let s:msg = "tabs: " . s:tabs . ", depth: " . a:depth . ", last_type: " . last_type . ", i: " . g:num_processed
 		echoerr s:msg
 		if s:tabs == a:depth + 1
 			if line =~# '^\t*\! .*'
@@ -71,22 +70,21 @@ function s:_sort_block(depth, pos)
 				let last_type = 3
 			endif
 		elseif s:tabs > a:depth + 1
-			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . s:i
+			echoerr "calling sub w/depth " . (a:depth + 1) . " and i " . g:num_processed
 			if last_type == 0
-				call add(l:bang_elems, s:_sort_block(a:depth + 1, s:i))
+				call add(l:bang_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 1
-				call add(l:bullet_elems, s:_sort_block(a:depth + 1, s:i))
+				call add(l:bullet_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 2
-				call add(l:tilde_elems, s:_sort_block(a:depth + 1, s:i))
+				call add(l:tilde_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			elseif last_type == 3
-				call add(l:dot_elems, s:_sort_block(a:depth + 1, s:i))
+				call add(l:dot_elems, s:_sort_block(a:depth + 1, g:num_processed))
 			endif
-			let s:i += g:num_processed
 		else
+			let g:num_processed += 1
 			return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
-			let g:num_processed = s:i + 1
 		endif
-		let s:i += 1
+		let g:num_processed += 1
 	endwhile
 	return [l:bang_elems, l:bullet_elems, l:tilde_elems, l:dot_elems]
 endfunction
