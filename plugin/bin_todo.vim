@@ -9,7 +9,11 @@ let g:_loaded_bin_todo = 1
 
 " Find the line numbers of current block
 " Blocks are delimited by dates of the following form:
-" = mm.dd.yyyy =
+" = mm/dd/yyyy =
+" or
+" = mm/dd/yy =
+" or
+" = mm/dd =
 " Searches up to find the top and down to find the bottom; the plugin operates 
 " only on the current block
 " Line numbers don't include the date lines but do include newlines
@@ -27,77 +31,6 @@ function s:_get_curr_block_lines()
 		let curr_line += 1
 	endwhile
 	let g:bottom_line = curr_line - 1
-endfunction
-
-function s:_sort_block(depth, pos)
-	" Find items beginning with !, *, ~, or .  Keep a separate list for each 
-	" symbol and append each line to the appropriate list.
-	" Sub-items aren't re-ordered.  Store the last top-level item type seen.
-	" When we hit a sub-item, append it to the list of the last top-level 
-	" item.
-	" TODO: Might there be a more-efficient sort, even if I don't care about 
-	" in-place sorting?
-	let g:num_processed = a:pos
-	let last_type = ""
-	let l:bullet_elems_nodate = []
-	let l:bullet_elems_date = []
-	let l:bang_elems_nodate = []
-	let l:bang_elems_date = []
-	let l:tilde_elems_nodate = []
-	let l:tilde_elems_date = []
-	let l:dot_elems_nodate = []
-	let l:dot_elems_date= []
-	let l:date = ""
-	let l:has_date = 0
-	while g:num_processed <= g:bottom_line
-		let line = getline(g:num_processed)
-		let s:tabs = 0
-		for s:char in split(line, '\zs')
-			if s:char =~# '\t'
-				let s:tabs += 1
-			else
-				break
-			endif
-		endfor
-		if s:tabs == a:depth + 1
-			"let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-			let date = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-			" If no date is found, substitute() returns the whole line 
-			" so first char will be tab
-			if split(line, '\zs')[0] != '\t'
-				let l:has_date = 1
-			else
-				let l:has_date = 0
-			endif
-			if line =~# '^\t*\! .*'
-				call add(l:bang_elems_nodate, line)
-				let last_type = 0
-			elseif line =~# '^\t*\* .*'
-				call add(l:bullet_elems_nodate, line)
-				let last_type = 1
-			elseif line =~# '^\t*\~ .*'
-				call add(l:tilde_elems_nodate, line)
-				let last_type = 2
-			elseif line =~# '^\t*\. .*'
-				call add(l:dot_elems_nodate, line)
-				let last_type = 3
-			endif
-		elseif s:tabs > a:depth + 1
-			if last_type == 0
-				call add(l:bang_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
-			elseif last_type == 1
-				call add(l:bullet_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
-			elseif last_type == 2
-				call add(l:tilde_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
-			elseif last_type == 3
-				call add(l:dot_elems_nodate, s:_sort_block(a:depth + 1, g:num_processed))
-			endif
-		else
-			return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
-		endif
-		let g:num_processed += 1
-	endwhile
-	return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
 endfunction
 
 function s:_log5(in)
@@ -172,8 +105,111 @@ function s:_score(importance, due)
 	return a:importance / l:log_res
 endfunction
 
-" Sort entries by importance and days until due.
+" Read the todos for a given day into a trie structure.
 "
+" Importance:
+" !: 4
+" *: 3
+" ~: 2
+" .: 1
+"
+" Reading in works by looping through a nested list of tasks and storing them
+" in a trie structure.  Each line is stored as a dictionary with the following
+" attributes:
+" Depth: The indentation of the line.  This is used to determine of which line
+" a given line is a child.
+" Date: The due date of an item.  This is optional but recommended.
+" Importance: Ranked one to four based on the entry symbol used !|*|~|.,
+" respectively.
+" Content: The content of the item, that is, the actual to-do.
+" Score: The importance score, calculated as outlined above.
+" Children: A list of lines indented underneath, each of which may have
+" children of it's own and is stored as outlined above.
+"
+" The list is represented as follows:
+" 1. Read in a line.
+" 2. Check the depth of the line by counting the number of tabs, then compare
+" it to the number of tabs in the last line.
+" 	- If the two are equal, the current line is part of the same line as
+" 	above.  Append it to curr_list.
+"	- If the current line is indented more than the previous line, it is a
+"	child of the previous line and part of a new list.  Append the last
+"	item of curr_list to parent_list, then set curr_list to the children
+"	list the last item of curr_list, or curr_list = 
+"	curr_list[-1]["children"].  Append the current line item to curr_list.
+"	- If the current line is indented less than the previous line, the
+"	existing list has ended.  Note that it is also possible that two
+"	sub-lists have just ended, e.g.:
+"	! a
+"		* b
+"		~ c
+"			~ d
+"			. e
+"	~ f
+"	Upon reading element e, two sub-lists have just ended.  Compare the
+"	current indentation to the last element in curr_list, in other words,
+"	compare tabs and curr_list[-1]["depth"].  For each tab of difference,
+"	set curr_list equal to the last element of parent_list and remove the
+"	last element of parent_list.  Then, process the current line into
+"	curr_list.
+let s:type_to_num = {
+	\ "!": 4
+	\ "*": 3
+	\ "~": 2
+	\ ".": 1
+}
+let s:num_to_type = {
+	\ "4": "!"
+	\ "3": "*"
+	\ "2": "~"
+	\ "1": "."
+}
+function s:_read_list()
+	let s:curr_list = []
+	let s:parent_list = []
+	let s:last_depth = 1
+	let l:start = g:top_line
+	while l:start <= g:bottom_line
+		let line = getline(l:start)
+		let s:tabs = 0
+		for s:char in split(line, '\zs')
+			if s:char =~# '\t'
+				let s:tabs += 1
+			else
+				break
+			endif
+		endfor
+		if s:tabs > s:last_depth
+			" Child item
+			call add(s:parent_list, s:curr_list[-1])
+			let s:curr_list = s:curr_list[-1]["children"]
+		elseif s:tabs < s:last_depth
+			" Sub-list(s) have ended; traverse back up the trie
+			let l:difference = s:last_depth - s:tabs
+			while l:difference > 0
+				let s:curr_list = s:parent_list[-1]
+				call remove(parent_list, -1)
+			endwhile
+			let l:i = s:tabs
+			while s:curr[-1]["depth"] == s:tabs
+				s:curr = l:parent_list[-1]
+			endwhile
+		endif
+		" Nothing needed for items at the same depth as the priot item
+		let l:tmp = {}
+		let l:tmp["depth"] = s:tabs
+		let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+		let l:type = substitute(line, '^\t*\(.\) \(\[.*\]\)? .*$', '\1', '')
+		let l:tmp["importance"] = s:type_to_num[type]
+		let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
+		let l:tmp["children"] = []
+		let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
+		call add(s:curr, l:tmp)
+		l:start += 1
+	endwhile
+	return parent_list[0]
+endfunction
+
 " There are three attributes to consider for a task:
 " 1. Importance.  I assign this a score of one through four, inclusive, by
 "    using the ! * ~ . system.  A greater importance should positively bias the
@@ -205,116 +241,75 @@ endfunction
 " Because vim provides only a log10() function, a change of base is necessary.
 " log5(x) = log10(x) / log10(5)
 "
-" Importance:
-" !: 4
-" *: 3
-" ~: 2
-" .: 1
-"
-" Sotring works by looping through a nested list of tasks and storing them in a
-" trie-like structure.  Each line is stored as a dictionary with the following
-" attributes:
-" Depth: The indentation of the line.  This is used to determine of which line
-" a given line is a child.
-" Date: The due date of an item.  This is optional but recommended.
-" Importance: Ranked one to four based on the entry symbol used !|*|~|.,
-" respectively.
-" Content: The content of the item, that is, the actual to-do.
-" Score: The importance score, calculated as outlined above.
-" Children: A list of lines indented underneath, each of which may have
-" children of it's own and is stored as outlined above.
-"
-" Sorting the list works as follows:
-" 1. Read in a line.
-" 2. Check the depth of the line by counting the number of tabs, then compare
-" it to the number of tabs in the last line.
-" 	- If the two are equal, the current line is part of the same line as
-" 	above.  Append it to curr_list.
-"	- If the current line is indented more than the previous line, it is a
-"	child of the previous line and part of a new list.  Append the last
-"	item of curr_list to parent_list, then set curr_list to the children
-"	list the last item of curr_list, or curr_list = 
-"	curr_list[-1]["children"].  Append the current line item to curr_list.
-"	- If the current line is indented less than the previous line, the
-"	existing list has ended.  Note that it is also possible that two
-"	sub-lists have just ended, e.g.:
-"	! a
-"		* b
-"		~ c
-"			~ d
-"			. e
-"	~ f
-"	Upon reading element e, two sub-lists have just ended.  Compare the
-"	current indentation to the last element in curr_list, in other words,
-"	compare tabs and curr_list[-1]["depth"].  For each tab of difference,
-"	set curr_list equal to the last element of parent_list and remove the
-"	last element of parent_list.  Then, process the current line into
-"	curr_list.
-function s:_sort_block(pos, list)
-	let s:curr_list = []
-	let s:parent_list = []
-	let s:last_depth = 1
-	while g:num_processed <= g:bottom_line
-		let line = getline(g:num_processed)
-		let s:tabs = 0
-		for s:char in split(line, '\zs')
-			if s:char =~# '\t'
-				let s:tabs += 1
-			else
-				break
-			endif
-		endfor
-		if s:tabs > s:last_depth
-			" Child item
-			call add(s:parent_list, s:curr_list[-1])
-			let s:curr_list = s:curr_list[-1]["children"]
-		elseif s:tabs < s:last_depth
-			" Sub-list(s) have ended; traverse back up the trie
-			let l:difference = s:last_depth - s:tabs
-			while l:difference > 0
-				let s:curr_list = s:parent_list[-1]
-				call remove(parent_list, -1)
-			endwhile
-			let l:i = s:tabs
-			while s:curr[-1]["depth"] == s:tabs
-				s:curr = l:parent_list[-1]
-			endwhile
-		endif
-		" Nothing needed for items at the same depth as the priot item
-		let l:tmp = {}
-		let l:tmp["depth"] = s:tabs
-		let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-		if line =~# '^\t*\! .*'
-			let l:tmp["importance"] = 4
-		elseif line =~# '^\t*\* .*'
-			let l:tmp["importance"] = 3
-		elseif line =~# '^\t*\~ .*'
-			let l:tmp["importance"] = 2
-		elseif line =~# '^\t*\. .*'
-			let l:tmp["importance"] = 1
-		endif
-		let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
-		let l:tmp["children"] = []
-		let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
-		call add(s:curr, l:tmp)
-	endwhile
+" Sorting is based on descending to the deepest non-leaf nodes, quick-sorting,
+" ascending a level, repeat.  Sorting is done via quicksort.
+function s:_sort_trie(in)
+	let val = []
+	for elem in a:in
+		if len(elem["children"]) > 0
+			 let elem["children"] = _sort_trie(elem["children"])
+		 endif
+	 endfor
+	 return s:_sort_trie(a:in)
 endfunction
 
+" https://gist.github.com/wtsnjp/53222131fd86824858fc0b37cd9db98a
+function s:quicksort(in, left, right)
+	if l:left >= l:right
+		return [a:in[l:left]]
+	endif
+	let i = l:left
+	let j = l:right
+	let pivot = a:in[i]
+	while 1
+		while a:in[i] < pivot
+			let i += 1
+		endwhile
+		while pivot < a:in[j]
+			let j -= 1
+		endwhile
+		if i >= j
+			break
+		endif
+		let tmp = a:in[i]
+		let a:in[i] = a:in[j]
+		let a:in[j] = tmp
+	endwhile
+	let l_list = s:quicksort(a:in, a:left, i - 1)
+	let r_list = s:quicksort(a:in, j + 1, a:right)
+	return l_list + r_list
+endfunction
+
+" Flatten all the trie into one list
 function s:_flatten_sorted(sorted)
-" https://gist.github.com/3322468
 	let val = []
 	for elem in a:sorted
-		if type(elem) == type([])
+		call add(val, elem)
+		if len(elem["children"]) > 0
 			call extend(val, s:_flatten_sorted(elem))
-		else
-			call add(val, elem)
 		endif
-		unlet elem
 	endfor
 	return val
 endfunction
 
-function s:_write_sorted(sorted)
+" Turn the flattened trie into a list of formatted lines
+function s:_fmt_flattened(flattened)
+	let val = []
+	for elem in a:flattened
+		let str = ""
+		let i = 0
+		while i < flattened["depth"]
+			str .= '\t'
+		endwhile
+		str .= num_to_type[elem["importance"]] . ' '
+		if flattened["date"] != ""
+			str .= "[" . flattened["date"] . "] "
+		endif
+		str .= flattened["content"]
+	endfor
+endfunction
+
+function s:_write_fmtd(formatted)
 	" store starting position
 	let orig_pos = winsaveview()
 	let new_top = g:top_line - 1
@@ -326,30 +321,20 @@ function s:_write_sorted(sorted)
 	execute "d" . difference
 
 	" Output re-ordered block.
-	call append(new_top, a:sorted)
+	call append(new_top, a:formatted)
 
 	" Restore window position
 	call winrestview(orig_pos)
 endfunction
 
-" list orig - original list
-" list in - list to insert
-" index - insert before this index
-" returns joined list
-function s:_insert_list_before_index(orig, in, index)
-	let end = index - 1
-	let tmp = orig[0:end]
-	let tmp += in
-	let tmp += [in:]
-	return tmp
-endfunction
-
 function s:_check_todo_sort()
 	let g:num_processed = 0
 	call s:_get_curr_block_lines()
-	let s:sorted = s:_sort_block(0, g:top_line)
-	let s:flat_sorted = s:_flatten_sorted(s:sorted)
-	call s:_write_sorted(s:flat_sorted)
+	let s:trie = s:_read_list()
+	let s:sorted = s:_sort_trie(s:trie)
+	let s:flat = s:_flatten_sorted(s:sorted)
+	let s:fmtd = s:_fmt_flattened(s:flat)
+	call s_write_fmtd(s:fmtd)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
