@@ -100,14 +100,160 @@ function s:_sort_block(depth, pos)
 	return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
 endfunction
 
-" Sort first by entry type (bang|bullet|tilde|dot) or date?
-" Stupid idea: multiply entry "score" (bang = 4, bullet = 3, tilde = 2, dot = 1)
-" by days from current day?  E.g. medium importance (tilde) * 3 days out = 6 pts
-" Then, just sort by points?
+function s:_log5(in)
+	" Pre-calculated
+	let s:log10_5 = 0.6990
+	return log10(a:in) / s:log10_5
+endfunction
+
+" Get month length
+" Have to account for leap year, so need a separate function.
+let s:month_lengths = {
+	\ "01": "31"
+	\ "02": "31"
+	\ "03": "28"
+	\ "04": "30"
+	\ "05": "31"
+	\ "06": "30"
+	\ "07": "31"
+	\ "08": "31"
+	\ "09": "30"
+	\ "10": "31"
+	\ "11": "30"
+	\ "12": "31"
+}
+function s:_month_len(month)
+	if a:month != "02"
+		return s:month_lengths[month]
+	else
+		if strftime('%y') % 4 == 0
+			return 29
+		else
+			return 28
+		endif
+	endif
+endfunction
+
+" Takes a date as mm/dd or mm/dd/yy and returns the number of days from today
+function s:_date_diff(date)
+	let l:parts = split(date, "/")
+	let l:days = 0
+	let l:curr_date = ""
+
+	" If mm/dd/yy, count years
+	if len(l:parts) == 3
+		let l:curr_date = split(strftime('%m/%d/%y'), "/")
+		" Count years
+		let l:days += (l:curr_date[2] - l:parts[2]) * 365
+	else
+		let l:curr_date split(strftime('%m/%d'), "/")
+	endif
+
+	" Count months
+	let l:days += _month_len(l:curr_date[1]) - _month_len(l:parts[1])
+	" Count days
+	let l:days += l:curr_date[0] - l:parts[0]
+
+	return l:days
+endfunction
+
+" Importance is a value 1-4 inclusive corresponding to . ~ * !
+" Due is the due date, given as mm/dd or mm/dd/yy.
+function s:_score(importance, due)
+	let l:days = _date_diff(due)
+	if l:days <= 0
+		" Can't take log of a negative number and can't have division
+		" by zero.  Anything due same-day or late is top-priority
+		" anyway.
+		l:log_res = 0.01
+	else
+		l:log_res = _log5(l:days)
+	endif
+	return a:importance / l:log_res
+endfunction
+
+" Sort entries by importance and days until due.
+"
+" There are three attributes to consider for a task:
+" 1. Importance.  I assign this a score of one through four, inclusive, by
+"    using the ! * ~ . system.  A greater importance should positively bias the
+"    ranking of a task.
+" 2. Due date.  A closer due date ought to positively bias the ranking of a
+"    task.  A task with a very close due date ought to bias the ranking of the 
+"    task to a significant degree.  While a task with a distant due date should
+"    be negatively weighted, the negative weight should not increase
+"    significantly between a five- and a thirty-day due date.  Otherwise, a
+"    task due in thirty days, even one of high importance, would get stuck at
+"    the bottom of the list until about five days before it were due.
+" 3. Task complexity or length.  There's no simple answer as to how this
+"    affects task prioritization.  While there are interesting ideas in queuing
+"    theory about whether to tackle larger or smaller tasks first, the real
+"    answer for man is to go for tasks which fit into one's calendar.  For
+"    instance, a long project may be better suited to a three-hour block of
+"    time in the afternoon than to an hour break between classes, while it
+"    might be better to tackle a simple reading assignment in that same break.
+"    So, ranking based on time would take calendar information which is a
+"    problem for another day and likely outside the scope of a vim plugin.
+"
+" This uses the formula rank = importance / log5(days until due)
+" Tasks due very soon receive significant rank increases, with all tasks due in
+" less than five days receiving a rank increase that decreases quickly as the
+" due date increases.  Those due after five days receive a negative
+" modification to rank, but the modification does not significantly increase
+" with increasing time.  This is to prevent a large task due in a month from
+" sitting at the bottom of the list until a few days before.
+" Because vim provides only a log10() function, a change of base is necessary.
+" log5(x) = log10(x) / log10(5)
+"
+" Importance:
+" !: 4
+" *: 3
+" ~: 2
+" .: 1
+"
+" Sotring works by looping through a nested list of tasks and storing them in a
+" trie-like structure.  Each line is stored as a dictionary with the following
+" attributes:
+" Depth: The indentation of the line.  This is used to determine of which line
+" a given line is a child.
+" Date: The due date of an item.  This is optional but recommended.
+" Importance: Ranked one to four based on the entry symbol used !|*|~|.,
+" respectively.
+" Content: The content of the item, that is, the actual to-do.
+" Score: The importance score, calculated as outlined above.
+" Children: A list of lines indented underneath, each of which may have
+" children of it's own and is stored as outlined above.
+"
+" Sorting the list works as follows:
+" 1. Read in a line.
+" 2. Check the depth of the line by counting the number of tabs, then compare
+" it to the number of tabs in the last line.
+" 	- If the two are equal, the current line is part of the same line as
+" 	above.  Append it to curr_list.
+"	- If the current line is indented more than the previous line, it is a
+"	child of the previous line and part of a new list.  Append the last
+"	item of curr_list to parent_list, then set curr_list to the children
+"	list the last item of curr_list, or curr_list = 
+"	curr_list[-1]["children"].  Append the current line item to curr_list.
+"	- If the current line is indented less than the previous line, the
+"	existing list has ended.  Note that it is also possible that two
+"	sub-lists have just ended, e.g.:
+"	! a
+"		* b
+"		~ c
+"			~ d
+"			. e
+"	~ f
+"	Upon reading element e, two sub-lists have just ended.  Compare the
+"	current indentation to the last element in curr_list, in other words,
+"	compare tabs and curr_list[-1]["depth"].  For each tab of difference,
+"	set curr_list equal to the last element of parent_list and remove the
+"	last element of parent_list.  Then, process the current line into
+"	curr_list.
 function s:_sort_block(pos, list)
-	let s:curr = a:list
-	let s:depth = 0
+	let s:curr_list = []
 	let s:parent_list = []
+	let s:last_depth = 1
 	while g:num_processed <= g:bottom_line
 		let line = getline(g:num_processed)
 		let s:tabs = 0
@@ -118,49 +264,39 @@ function s:_sort_block(pos, list)
 				break
 			endif
 		endfor
-		if s:curr[0]["depth"]
-			s:depth = s:curr[0]["depth"]
-		endif
-		if s:depth == s:tabs
-			let l:tmp = {}
-			let l:tmp["depth"] = s:tabs
-			let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-			if line =~# '^\t*\! .*'
-				let l:tmp["type"] = "bang"
-			elseif line =~# '^\t*\* .*'
-				let l:tmp["type"] = "bullet"
-			elseif line =~# '^\t*\~ .*'
-				let l:tmp["type"] = "tilde"
-			elseif line =~# '^\t*\. .*'
-				let l:tmp["type"] = "dot"
-			endif
-			let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
-			let l:tmp["children"] = []
-			call add(s:curr, l:tmp)
-		else if s:tabs > s:depth
-			let l:tmp = {}
-			let l:tmp["depth"] = s:tabs
-			let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-			if line =~# '^\t*\! .*'
-				let l:tmp["type"] = "bang"
-			elseif line =~# '^\t*\* .*'
-				let l:tmp["type"] = "bullet"
-			elseif line =~# '^\t*\~ .*'
-				let l:tmp["type"] = "tilde"
-			elseif line =~# '^\t*\. .*'
-				let l:tmp["type"] = "dot"
-			endif
-			let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
-			let l:tmp["children"] = []
-			call add(s:curr[-1]["children"], l:tmp)
-			call add(l:parent_list, s:curr)
-			let s:curr = l:tmp
-		else if s:tabs < a:depth
+		if s:tabs > s:last_depth
+			" Child item
+			call add(s:parent_list, s:curr_list[-1])
+			let s:curr_list = s:curr_list[-1]["children"]
+		elseif s:tabs < s:last_depth
+			" Sub-list(s) have ended; traverse back up the trie
+			let l:difference = s:last_depth - s:tabs
+			while l:difference > 0
+				let s:curr_list = s:parent_list[-1]
+				call remove(parent_list, -1)
+			endwhile
 			let l:i = s:tabs
 			while s:curr[-1]["depth"] == s:tabs
 				s:curr = l:parent_list[-1]
 			endwhile
 		endif
+		" Nothing needed for items at the same depth as the priot item
+		let l:tmp = {}
+		let l:tmp["depth"] = s:tabs
+		let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+		if line =~# '^\t*\! .*'
+			let l:tmp["importance"] = 4
+		elseif line =~# '^\t*\* .*'
+			let l:tmp["importance"] = 3
+		elseif line =~# '^\t*\~ .*'
+			let l:tmp["importance"] = 2
+		elseif line =~# '^\t*\. .*'
+			let l:tmp["importance"] = 1
+		endif
+		let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
+		let l:tmp["children"] = []
+		let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
+		call add(s:curr, l:tmp)
 	endwhile
 endfunction
 
