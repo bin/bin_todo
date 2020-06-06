@@ -100,6 +100,70 @@ function s:_sort_block(depth, pos)
 	return [l:bang_elems_nodate, l:bullet_elems_nodate, l:tilde_elems_nodate, l:dot_elems_nodate]
 endfunction
 
+" Sort first by entry type (bang|bullet|tilde|dot) or date?
+" Stupid idea: multiply entry "score" (bang = 4, bullet = 3, tilde = 2, dot = 1)
+" by days from current day?  E.g. medium importance (tilde) * 3 days out = 6 pts
+" Then, just sort by points?
+function s:_sort_block(pos, list)
+	let s:curr = a:list
+	let s:depth = 0
+	let s:parent_list = []
+	while g:num_processed <= g:bottom_line
+		let line = getline(g:num_processed)
+		let s:tabs = 0
+		for s:char in split(line, '\zs')
+			if s:char =~# '\t'
+				let s:tabs += 1
+			else
+				break
+			endif
+		endfor
+		if s:curr[0]["depth"]
+			s:depth = s:curr[0]["depth"]
+		endif
+		if s:depth == s:tabs
+			let l:tmp = {}
+			let l:tmp["depth"] = s:tabs
+			let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+			if line =~# '^\t*\! .*'
+				let l:tmp["type"] = "bang"
+			elseif line =~# '^\t*\* .*'
+				let l:tmp["type"] = "bullet"
+			elseif line =~# '^\t*\~ .*'
+				let l:tmp["type"] = "tilde"
+			elseif line =~# '^\t*\. .*'
+				let l:tmp["type"] = "dot"
+			endif
+			let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
+			let l:tmp["children"] = []
+			call add(s:curr, l:tmp)
+		else if s:tabs > s:depth
+			let l:tmp = {}
+			let l:tmp["depth"] = s:tabs
+			let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
+			if line =~# '^\t*\! .*'
+				let l:tmp["type"] = "bang"
+			elseif line =~# '^\t*\* .*'
+				let l:tmp["type"] = "bullet"
+			elseif line =~# '^\t*\~ .*'
+				let l:tmp["type"] = "tilde"
+			elseif line =~# '^\t*\. .*'
+				let l:tmp["type"] = "dot"
+			endif
+			let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
+			let l:tmp["children"] = []
+			call add(s:curr[-1]["children"], l:tmp)
+			call add(l:parent_list, s:curr)
+			let s:curr = l:tmp
+		else if s:tabs < a:depth
+			let l:i = s:tabs
+			while s:curr[-1]["depth"] == s:tabs
+				s:curr = l:parent_list[-1]
+			endwhile
+		endif
+	endwhile
+endfunction
+
 function s:_flatten_sorted(sorted)
 " https://gist.github.com/3322468
 	let val = []
