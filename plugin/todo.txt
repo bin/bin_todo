@@ -11,20 +11,19 @@
 	* zxcv
 
 = asdf =
-
 	. asdf
-		+ test1
-		+ test2
+		. test1
+		! test2
+		* [06/07] test3
 	~ qwerty
-		+ quack1
-		+ quack2
+		~ quack1
+		* quack2
 	! uiop
-		+ blargh1
-		+ blargh2
+		. blargh1
+		~ blargh2
 	* zxcv
-		+ gah1
-		+ gah2
-
+		* gah1
+		! gah2
 = asdf =
 	. [6/6/2020] test item
 	. [6/5/2020] test item
