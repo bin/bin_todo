@@ -42,22 +42,22 @@ endfunction
 " Get month length
 " Have to account for leap year, so need a separate function.
 let s:month_lengths = {
-	\ "01": "31"
-	\ "02": "31"
-	\ "03": "28"
-	\ "04": "30"
-	\ "05": "31"
-	\ "06": "30"
-	\ "07": "31"
-	\ "08": "31"
-	\ "09": "30"
-	\ "10": "31"
-	\ "11": "30"
-	\ "12": "31"
-}
+	\ "01": "31",
+	\ "02": "31",
+	\ "03": "28",
+	\ "04": "30",
+	\ "05": "31",
+	\ "06": "30",
+	\ "07": "31",
+	\ "08": "31",
+	\ "09": "30",
+	\ "10": "31",
+	\ "11": "30",
+	\ "12": "31",
+	\}
 function s:_month_len(month)
 	if a:month != "02"
-		return s:month_lengths[month]
+		return s:month_lengths[a:month]
 	else
 		if strftime('%y') % 4 == 0
 			return 29
@@ -69,7 +69,7 @@ endfunction
 
 " Takes a date as mm/dd or mm/dd/yy and returns the number of days from today
 function s:_date_diff(date)
-	let l:parts = split(date, "/")
+	let l:parts = split(a:date, "/")
 	let l:days = 0
 	let l:curr_date = ""
 
@@ -79,11 +79,11 @@ function s:_date_diff(date)
 		" Count years
 		let l:days += (l:curr_date[2] - l:parts[2]) * 365
 	else
-		let l:curr_date split(strftime('%m/%d'), "/")
+		let l:curr_date = split(strftime('%m/%d'), "/")
 	endif
 
 	" Count months
-	let l:days += _month_len(l:curr_date[1]) - _month_len(l:parts[1])
+	let l:days += s:_month_len(l:curr_date[1]) - s:_month_len(l:parts[1])
 	" Count days
 	let l:days += l:curr_date[0] - l:parts[0]
 
@@ -93,14 +93,14 @@ endfunction
 " Importance is a value 1-4 inclusive corresponding to . ~ * !
 " Due is the due date, given as mm/dd or mm/dd/yy.
 function s:_score(importance, due)
-	let l:days = _date_diff(due)
+	let l:days = s:_date_diff(a:due)
 	if l:days <= 0
 		" Can't take log of a negative number and can't have division
 		" by zero.  Anything due same-day or late is top-priority
 		" anyway.
-		l:log_res = 0.01
+		let l:log_res = 0.01
 	else
-		l:log_res = _log5(l:days)
+		let l:log_res = _log5(l:days)
 	endif
 	return a:importance / l:log_res
 endfunction
@@ -153,61 +153,70 @@ endfunction
 "	last element of parent_list.  Then, process the current line into
 "	curr_list.
 let s:type_to_num = {
-	\ "!": 4
-	\ "*": 3
-	\ "~": 2
-	\ ".": 1
-}
+	\ "!": 4,
+	\ "*": 3,
+	\ "~": 2,
+	\ ".": 1,
+	\}
 let s:num_to_type = {
-	\ "4": "!"
-	\ "3": "*"
-	\ "2": "~"
-	\ "1": "."
-}
+	\ "4": "!",
+	\ "3": "*",
+	\ "2": "~",
+	\ "1": ".",
+	\}
 function s:_read_list()
 	let s:curr_list = []
 	let s:parent_list = []
 	let s:last_depth = 1
 	let l:start = g:top_line
 	while l:start <= g:bottom_line
-		let line = getline(l:start)
-		let s:tabs = 0
-		for s:char in split(line, '\zs')
-			if s:char =~# '\t'
-				let s:tabs += 1
-			else
-				break
+		let l:line = getline(l:start)
+		if l:line !~# '^\s*$'
+			let s:tabs = 0
+			for s:char in split(line, '\zs')
+				if s:char =~# '\t'
+					let s:tabs += 1
+				else
+					break
+				endif
+			endfor
+			echoerr "s:tabs is " . s:tabs . " and s:last_depth is " . s:last_depth
+			if s:tabs > s:last_depth
+				" Child item
+				call add(s:parent_list, s:curr_list[-1])
+				let s:curr_list = s:curr_list[-1]["children"]
+			elseif s:tabs < s:last_depth
+				" Sub-list(s) have ended; traverse back up the trie
+				let l:difference = s:last_depth - s:tabs
+				while l:difference > 0
+					let s:curr_list = s:parent_list[-1]
+					call remove(s:parent_list, -1)
+				endwhile
+				let l:i = s:tabs
+				while s:curr_list[-1]["depth"] == s:tabs
+					s:curr_list = s:parent_list[-1]
+				endwhile
 			endif
-		endfor
-		if s:tabs > s:last_depth
-			" Child item
-			call add(s:parent_list, s:curr_list[-1])
-			let s:curr_list = s:curr_list[-1]["children"]
-		elseif s:tabs < s:last_depth
-			" Sub-list(s) have ended; traverse back up the trie
-			let l:difference = s:last_depth - s:tabs
-			while l:difference > 0
-				let s:curr_list = s:parent_list[-1]
-				call remove(parent_list, -1)
-			endwhile
-			let l:i = s:tabs
-			while s:curr[-1]["depth"] == s:tabs
-				s:curr = l:parent_list[-1]
-			endwhile
+			" Nothing needed for items at the same depth as the priot item
+			let l:tmp = {}
+			let l:tmp["depth"] = s:tabs
+			let l:type = substitute(line, '^\t*.\(\.\|\!\|\~\|\*\) \(\[.*\]\)\?.*$', '\1', '')
+			let l:tmp["importance"] = s:type_to_num[l:type]
+			let l:date = substitute(line, '^\t*..\(\[\(.*\)\]\)\? .*$', '\2', '')
+			if l:date !~# '^\s*$'
+				let l:tmp["date"] = l:date
+				let l:tmp["score"] = s:_score(l:tmp["importance"], l:tmp["date"])
+			else
+				let l:tmp["score"] = 0
+			endif
+			let l:tmp["content"] = substitute(line, '^\t*..\(\[.*\]\)\? \(.*\)$', '\2', '')
+			let l:tmp["children"] = []
+			let s:last_depth = s:tabs
+			call add(s:curr_list, l:tmp)
 		endif
-		" Nothing needed for items at the same depth as the priot item
-		let l:tmp = {}
-		let l:tmp["depth"] = s:tabs
-		let l:tmp["date"] = substitute(line, '^\t*. \[\(.*\)\] .*$', '\1', '')
-		let l:type = substitute(line, '^\t*\(.\) \(\[.*\]\)? .*$', '\1', '')
-		let l:tmp["importance"] = s:type_to_num[type]
-		let l:tmp["content"] = substitute(line, '^\t*. \([.*]\)? \(.*\)$', '\1', '')
-		let l:tmp["children"] = []
-		let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
-		call add(s:curr, l:tmp)
-		l:start += 1
+		let l:start += 1
 	endwhile
-	return parent_list[0]
+	return s:parent_list[0]
 endfunction
 
 " There are three attributes to consider for a task:
@@ -245,6 +254,7 @@ endfunction
 " ascending a level, repeat.  Sorting is done via quicksort.
 function s:_sort_trie(in)
 	let val = []
+	echoerr "in is " . string(a:in)
 	for elem in a:in
 		if len(elem["children"]) > 0
 			 let elem["children"] = _sort_trie(elem["children"])
