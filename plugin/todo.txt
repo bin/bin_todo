@@ -15,6 +15,7 @@
 		. test1
 		! test2
 		* [06/07] test3
+		* [06/08] test4
 	~ qwerty
 		~ quack1
 		* quack2

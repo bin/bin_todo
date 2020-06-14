@@ -83,9 +83,9 @@ function s:_date_diff(date)
 	endif
 
 	" Count months
-	let l:days += s:_month_len(l:curr_date[1]) - s:_month_len(l:parts[1])
+	let l:days += s:_month_len(l:curr_date[0]) - s:_month_len(l:parts[0])
 	" Count days
-	let l:days += l:curr_date[0] - l:parts[0]
+	let l:days += l:curr_date[1] - l:parts[1]
 
 	return l:days
 endfunction
@@ -100,7 +100,7 @@ function s:_score(importance, due)
 		" anyway.
 		let l:log_res = 0.01
 	else
-		let l:log_res = _log5(l:days)
+		let l:log_res = s:_log5(l:days)
 	endif
 	return a:importance / l:log_res
 endfunction
@@ -146,7 +146,7 @@ endfunction
 "			~ d
 "			. e
 "	~ f
-"	Upon reading element e, two sub-lists have just ended.  Compare the
+"	Upon reading element f, two sub-lists have just ended.  Compare the
 "	current indentation to the last element in curr_list, in other words,
 "	compare tabs and curr_list[-1]["depth"].  For each tab of difference,
 "	set curr_list equal to the last element of parent_list and remove the
@@ -173,17 +173,16 @@ function s:_read_list()
 		let l:line = getline(l:start)
 		if l:line !~# '^\s*$'
 			let s:tabs = 0
-			for s:char in split(line, '\zs')
+			for s:char in split(l:line, '\zs')
 				if s:char =~# '\t'
 					let s:tabs += 1
 				else
 					break
 				endif
 			endfor
-			echoerr "s:tabs is " . s:tabs . " and s:last_depth is " . s:last_depth
 			if s:tabs > s:last_depth
 				" Child item
-				call add(s:parent_list, s:curr_list[-1])
+				call add(s:parent_list, s:curr_list)
 				let s:curr_list = s:curr_list[-1]["children"]
 			elseif s:tabs < s:last_depth
 				" Sub-list(s) have ended; traverse back up the trie
@@ -191,11 +190,13 @@ function s:_read_list()
 				while l:difference > 0
 					let s:curr_list = s:parent_list[-1]
 					call remove(s:parent_list, -1)
+					let l:difference -= 1
 				endwhile
-				let l:i = s:tabs
-				while s:curr_list[-1]["depth"] == s:tabs
-					s:curr_list = s:parent_list[-1]
-				endwhile
+				"let l:i = s:tabs
+				"while s:curr_list[-1]["depth"] == s:tabs
+				"	let s:curr_list = s:parent_list[-1]
+				"endwhile
+				"let s:curr_list = s:parent_list
 			endif
 			" Nothing needed for items at the same depth as the priot item
 			let l:tmp = {}
@@ -254,52 +255,63 @@ endfunction
 " ascending a level, repeat.  Sorting is done via quicksort.
 function s:_sort_trie(in)
 	let val = []
-	echoerr "in is " . string(a:in)
-	for elem in a:in
-		if len(elem["children"]) > 0
-			 let elem["children"] = _sort_trie(elem["children"])
-		 endif
-	 endfor
-	 return s:_sort_trie(a:in)
+	if len(a:in["children"]) > 0
+			let i = 0
+			while i < len(a:in["children"])
+				 let a:in["children"][i] = s:_sort_trie(a:in["children"][i])
+				 let i += 1
+			endwhile
+			echoerr "sorting " . string(a:in["children"])
+			let a:in["children"] = sort(a:in["children"], "s:_compare_dicts_by_score")
+			echoerr "sorted into " . string(a:in["children"])
+			return a:in["children"]
+	 else
+		 return a:in
+	 endif
 endfunction
 
-" https://gist.github.com/wtsnjp/53222131fd86824858fc0b37cd9db98a
-function s:quicksort(in, left, right)
-	if l:left >= l:right
-		return [a:in[l:left]]
+" Function passed to vim's sort() to compare two dictionaries by score value
+" TODO: If two don't have a score value, they'll still have importance, so
+" probably rank by that secondarily if two scores are equal.
+function s:_compare_dicts_by_score(d1, d2)
+	echoerr "d1 is " . string(a:d1) . " and d2 is " . string(a:d2)
+	let l:n1 = a:d1["score"]
+	let l:n2 = a:d2["score"]
+	if type(a:d1["score"]) == type("")
+		let l:n1 = str2float(a:d1["score"])
 	endif
-	let i = l:left
-	let j = l:right
-	let pivot = a:in[i]
-	while 1
-		while a:in[i] < pivot
-			let i += 1
-		endwhile
-		while pivot < a:in[j]
-			let j -= 1
-		endwhile
-		if i >= j
-			break
-		endif
-		let tmp = a:in[i]
-		let a:in[i] = a:in[j]
-		let a:in[j] = tmp
-	endwhile
-	let l_list = s:quicksort(a:in, a:left, i - 1)
-	let r_list = s:quicksort(a:in, j + 1, a:right)
-	return l_list + r_list
+	if type(a:d2["score"]) == type("")
+		let l:n2 = str2float(a:d2["score"])
+	endif
+
+	if l:n1 < l:n2
+		"return -1
+		return 1
+	elseif l:n1 > l:n2
+		"return 1
+		return -1
+	else
+		return 0
+	endif
 endfunction
 
 " Flatten all the trie into one list
 function s:_flatten_sorted(sorted)
 	let val = []
-	for elem in a:sorted
-		call add(val, elem)
-		if len(elem["children"]) > 0
-			call extend(val, s:_flatten_sorted(elem))
+	if type(a:sorted) == type([])
+		for elem in a:sorted
+			call add(val, elem)
+			if len(elem["children"]) > 0
+				call extend(val, s:_flatten_sorted(elem))
+			endif
+		endfor
+		return val
+	else
+		call add(val, a:sorted)
+		if(len(a:sorted["children"])) > 0
+			call extend(val, s:_flatten_sorted(a:sorted["children"]))
 		endif
-	endfor
-	return val
+	endif
 endfunction
 
 " Turn the flattened trie into a list of formatted lines
@@ -341,7 +353,9 @@ function s:_check_todo_sort()
 	let g:num_processed = 0
 	call s:_get_curr_block_lines()
 	let s:trie = s:_read_list()
+	echoerr "trie is " . string(s:trie)
 	let s:sorted = s:_sort_trie(s:trie)
+	echoerr "sorted is " . string(s:sorted)
 	let s:flat = s:_flatten_sorted(s:sorted)
 	let s:fmtd = s:_fmt_flattened(s:flat)
 	call s_write_fmtd(s:fmtd)
