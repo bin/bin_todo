@@ -293,10 +293,12 @@ endfunction
 function s:_flatten_sorted(sorted)
 	let val = []
 	for elem in a:sorted
-		if type(elem) == type([])
-			call extend(val, s:_flatten_sorted(elem["children"]))
-		else
-			call add(val, elem)
+		let children = elem["children"]
+		let elem["children"] = []
+		call add(val, elem)
+		if len(children) > 0
+			call extend(val, s:_flatten_sorted(children))
+			let elem["children"] = []
 		endif
 		unlet elem
 	endfor
@@ -309,15 +311,19 @@ function s:_fmt_flattened(flattened)
 	for elem in a:flattened
 		let str = ""
 		let i = 0
-		while i < a:flattened["depth"]
-			str .= '\t'
+		while i < elem["depth"]
+			let str .= '\t'
+			let i += 1
 		endwhile
-		str .= num_to_type[elem["importance"]] . ' '
-		if a:flattened["date"] != ""
-			str .= "[" . a:flattened["date"] . "] "
+		let str .= s:num_to_type[elem["importance"]] . ' '
+		if has_key(elem, "date")
+			let str .= "[" . elem["date"] . "] "
 		endif
-		str .= a:flattened["content"]
+		let str .= elem["content"]
+		echoerr "formatted string is " . str
+		call add(val, str)
 	endfor
+	return val
 endfunction
 
 function s:_write_fmtd(formatted)
@@ -342,13 +348,14 @@ function s:_check_todo_sort()
 	let g:num_processed = 0
 	call s:_get_curr_block_lines()
 	let s:trie = s:_read_list()
-	echoerr "trie is " . string(s:trie)
+	echo "trie is " . string(s:trie)
 	let s:sorted = s:_sort_trie(s:trie)
-	echoerr "sorted is " . string(s:sorted)
+	echo "sorted is " . string(s:sorted)
 	let s:flat = s:_flatten_sorted(s:sorted)
-	echoerr "flattened is " . string(s:flat)
+	echo "flattened is " . string(s:flat)
 	let s:fmtd = s:_fmt_flattened(s:flat)
-	call s_write_fmtd(s:fmtd)
+	echo "formatted is " . string(s:fmtd)
+	call s:write_fmtd(s:fmtd)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
