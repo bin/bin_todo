@@ -247,7 +247,7 @@ function s:_sort_trie(in)
 				let i += 1
 			endwhile
 	 endif
-	 return a:in
+	 return sort(a:in, "s:_compare_dicts_by_score")
 endfunction
 
 " Function passed to vim's sort() to compare two dictionaries by score value
