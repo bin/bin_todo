@@ -39,55 +39,38 @@ function s:_log5(in)
 	return log10(a:in) / s:log10_5
 endfunction
 
-" Get month length
-" Have to account for leap year, so need a separate function.
-let s:month_lengths = {
-	\ "01": "31",
-	\ "02": "31",
-	\ "03": "28",
-	\ "04": "30",
-	\ "05": "31",
-	\ "06": "30",
-	\ "07": "31",
-	\ "08": "31",
-	\ "09": "30",
-	\ "10": "31",
-	\ "11": "30",
-	\ "12": "31",
-	\}
-function s:_month_len(month)
-	if a:month != "02"
-		return s:month_lengths[a:month]
-	else
-		if strftime('%y') % 4 == 0
-			return 29
-		else
-			return 28
-		endif
-	endif
+" Return the Julian date number of a date
+" I honestly have no idea how this formula works, but subtracting two of these
+" gives the difference in days.
+" https://stackoverflow.com/a/12863278
+function s:_julian_num(day, month, year)
+	let l:month = (a:month + 9) % 12
+	let l:year = a:year - (l:month / 10)
+	return floor((365 * l:year) + (l:year / 4) - (l:year / 100) + (l:year / 400) + (((l:month * 306) + 5) / 10) + (a:day - 1))
 endfunction
 
 " Takes a date as mm/dd or mm/dd/yy and returns the number of days from today
 function s:_date_diff(date)
-	let l:parts = split(a:date, "/")
-	let l:days = 0
-	let l:curr_date = ""
+	let l:curr_date = split(strftime('%m/%d/%y'), "/")
+	let l:curr_month = l:curr_date[0]
+	let l:curr_day = l:curr_date[1]
+	let l:curr_year = l:curr_date[2]
 
-	" If mm/dd/yy, count years
-	if len(l:parts) == 3
-		let l:curr_date = split(strftime('%m/%d/%y'), "/")
-		" Count years
-		let l:days += (l:curr_date[2] - l:parts[2]) * 365
+	let l:parts = split(a:date, "/")
+	let l:in_month = l:parts[0]
+	let l:in_day = l:parts[1]
+	" If mm/dd/yy use supplied year; else assume current year
+	if len(l:parts) < 3
+		let l:in_year = l:curr_year
 	else
-		let l:curr_date = split(strftime('%m/%d'), "/")
+		let l:in_year = parts[2]
 	endif
 
-	" Count months
-	let l:days += s:_month_len(l:curr_date[0]) - s:_month_len(l:parts[0])
-	" Count days
-	let l:days += l:curr_date[1] - l:parts[1]
+	let l:difference= 0
+	let l:in_num = s:_julian_num(l:in_day, l:in_month, l:in_year)
+	let l:curr_num = s:_julian_num(l:curr_day, l:curr_month, l:curr_year)
 
-	return l:days
+	return l:in_num - l:curr_num
 endfunction
 
 " Importance is a value 1-4 inclusive corresponding to . ~ * !
