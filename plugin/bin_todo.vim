@@ -254,27 +254,21 @@ endfunction
 " Sorting is based on descending to the deepest non-leaf nodes, quick-sorting,
 " ascending a level, repeat.  Sorting is done via quicksort.
 function s:_sort_trie(in)
-	let val = []
-	if len(a:in["children"]) > 0
+	if len(a:in) > 0
 			let i = 0
-			while i < len(a:in["children"])
-				 let a:in["children"][i] = s:_sort_trie(a:in["children"][i])
-				 let i += 1
+			while i < len(a:in)
+				let a:in[i]["children"] = s:_sort_trie(a:in[i]["children"])
+				let a:in[i]["children"] = sort(a:in[i]["children"], "s:_compare_dicts_by_score")
+				let i += 1
 			endwhile
-			echoerr "sorting " . string(a:in["children"])
-			let a:in["children"] = sort(a:in["children"], "s:_compare_dicts_by_score")
-			echoerr "sorted into " . string(a:in["children"])
-			return a:in["children"]
-	 else
-		 return a:in
 	 endif
+	 return a:in
 endfunction
 
 " Function passed to vim's sort() to compare two dictionaries by score value
 " TODO: If two don't have a score value, they'll still have importance, so
 " probably rank by that secondarily if two scores are equal.
 function s:_compare_dicts_by_score(d1, d2)
-	echoerr "d1 is " . string(a:d1) . " and d2 is " . string(a:d2)
 	let l:n1 = a:d1["score"]
 	let l:n2 = a:d2["score"]
 	if type(a:d1["score"]) == type("")
@@ -298,20 +292,15 @@ endfunction
 " Flatten all the trie into one list
 function s:_flatten_sorted(sorted)
 	let val = []
-	if type(a:sorted) == type([])
-		for elem in a:sorted
+	for elem in a:sorted
+		if type(elem) == type([])
+			call extend(val, s:_flatten_sorted(elem["children"]))
+		else
 			call add(val, elem)
-			if len(elem["children"]) > 0
-				call extend(val, s:_flatten_sorted(elem))
-			endif
-		endfor
-		return val
-	else
-		call add(val, a:sorted)
-		if(len(a:sorted["children"])) > 0
-			call extend(val, s:_flatten_sorted(a:sorted["children"]))
 		endif
-	endif
+		unlet elem
+	endfor
+	return val
 endfunction
 
 " Turn the flattened trie into a list of formatted lines
@@ -320,14 +309,14 @@ function s:_fmt_flattened(flattened)
 	for elem in a:flattened
 		let str = ""
 		let i = 0
-		while i < flattened["depth"]
+		while i < a:flattened["depth"]
 			str .= '\t'
 		endwhile
 		str .= num_to_type[elem["importance"]] . ' '
-		if flattened["date"] != ""
-			str .= "[" . flattened["date"] . "] "
+		if a:flattened["date"] != ""
+			str .= "[" . a:flattened["date"] . "] "
 		endif
-		str .= flattened["content"]
+		str .= a:flattened["content"]
 	endfor
 endfunction
 
@@ -357,6 +346,7 @@ function s:_check_todo_sort()
 	let s:sorted = s:_sort_trie(s:trie)
 	echoerr "sorted is " . string(s:sorted)
 	let s:flat = s:_flatten_sorted(s:sorted)
+	echoerr "flattened is " . string(s:flat)
 	let s:fmtd = s:_fmt_flattened(s:flat)
 	call s_write_fmtd(s:fmtd)
 endfunction
