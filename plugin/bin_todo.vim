@@ -312,7 +312,7 @@ function s:_fmt_flattened(flattened)
 		let str = ""
 		let i = 0
 		while i < elem["depth"]
-			let str .= '\t'
+			let str .= "\t"
 			let i += 1
 		endwhile
 		let str .= s:num_to_type[elem["importance"]] . ' '
@@ -320,7 +320,6 @@ function s:_fmt_flattened(flattened)
 			let str .= "[" . elem["date"] . "] "
 		endif
 		let str .= elem["content"]
-		echoerr "formatted string is " . str
 		call add(val, str)
 	endfor
 	return val
@@ -355,7 +354,7 @@ function s:_check_todo_sort()
 	echo "flattened is " . string(s:flat)
 	let s:fmtd = s:_fmt_flattened(s:flat)
 	echo "formatted is " . string(s:fmtd)
-	call s:write_fmtd(s:fmtd)
+	call s:_write_fmtd(s:fmtd)
 endfunction
 
 autocmd InsertLeave todo.txt call s:_check_todo_sort()
