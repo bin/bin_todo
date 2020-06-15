@@ -253,6 +253,8 @@ endfunction
 "
 " Sorting is based on descending to the deepest non-leaf nodes, quick-sorting,
 " ascending a level, repeat.  Sorting is done via quicksort.
+"
+" TODO: for some reason, this does not yet work on top-level items... why?
 function s:_sort_trie(in)
 	if len(a:in) > 0
 			let i = 0
@@ -266,8 +268,14 @@ function s:_sort_trie(in)
 endfunction
 
 " Function passed to vim's sort() to compare two dictionaries by score value
-" TODO: If two don't have a score value, they'll still have importance, so
-" probably rank by that secondarily if two scores are equal.
+" If two elements both have scores (i.e. both have a date), the scores are 
+" compared and the result is returned.  If they are equal, their importances
+" are compared and the result is returned.
+" If one element has a score (i.e. a date) and the other does not, the element
+" with the score is always returned as greater.
+" If both elements lack scores, the importance rankings are compared and the
+" result is returned.
+" Note: items with no score have their score field set to zero.
 function s:_compare_dicts_by_score(d1, d2)
 	let l:n1 = a:d1["score"]
 	let l:n2 = a:d2["score"]
@@ -277,12 +285,21 @@ function s:_compare_dicts_by_score(d1, d2)
 	if type(a:d2["score"]) == type("")
 		let l:n2 = str2float(a:d2["score"])
 	endif
+	if l:n1 == 0 && l:n2 != 0
+		return 1
+	elseif l:n1 != 0 && l:n2 == 0
+		return -1
+	elseif l:n1 == 0 && l:n2 == 0
+		let l:n1 = str2nr(a:d1["importance"])
+		let l:n2 = str2nr(a:d2["importance"])
+	elseif l:n1 != 0 && l:n2 != 0 && l:n1 == l:n2
+		let l:n1 = str2nr(a:d1["importance"])
+		let l:n2 = str2nr(a:d2["importance"])
+	endif
 
 	if l:n1 < l:n2
-		"return -1
 		return 1
 	elseif l:n1 > l:n2
-		"return 1
 		return -1
 	else
 		return 0
