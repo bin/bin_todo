@@ -200,6 +200,7 @@ function s:_read_list()
 		endif
 		let l:start += 1
 	endwhile
+	call add(s:parent_list, s:curr_list)
 	return s:parent_list[0]
 endfunction
 
@@ -347,13 +348,13 @@ function s:_check_todo_sort()
 	let g:num_processed = 0
 	call s:_get_curr_block_lines()
 	let s:trie = s:_read_list()
-	echo "trie is " . string(s:trie)
+	" echo "trie is " . string(s:trie)
 	let s:sorted = s:_sort_trie(s:trie)
-	echo "sorted is " . string(s:sorted)
+	" echo "sorted is " . string(s:sorted)
 	let s:flat = s:_flatten_sorted(s:sorted)
-	echo "flattened is " . string(s:flat)
+	" echo "flattened is " . string(s:flat)
 	let s:fmtd = s:_fmt_flattened(s:flat)
-	echo "formatted is " . string(s:fmtd)
+	" echo "formatted is " . string(s:fmtd)
 	call s:_write_fmtd(s:fmtd)
 endfunction
 
