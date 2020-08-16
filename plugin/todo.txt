@@ -11,33 +11,33 @@
 	* zxcv
 
 TODO: dates that are further in the past become lower priority?  Huh?
-TODO: seemingly only one layer of sorting actually works
 = asdf =
-	. asdf
-		* [06/17] test5
-		* [07/15] test4
-		* [06/16] test3
-			~ inner test 1
-			. inner test 0
-		! test2
-			* [06/17] inner test 0
-			~ [06/27] inner test -1
-			. [06/16] inner test 1
-			! inner test 2
-			~ inner test 3
-		. test1
-			! inner test 1
-			* inner test 2
-			~ inner test 0
-	~ qwerty
-		* quack2
-		~ quack1
 	! uiop
 		~ blargh2
 		. blargh1
 	* zxcv
 		! gah2
 		* gah1
+	~ qwerty
+		* quack2
+		~ quack1
+	. asdf
+		* [08/16] test3
+			~ inner test 1
+			. inner test 0
+		* [08/23] test4
+		* [08/24] test5
+		! test2
+			. [08/15] inner test 1
+			* [08/27] inner test 0
+			~ [08/29] inner test -1
+			! inner test 2
+			~ inner test 3
+		. test1
+			! inner test 1
+			* inner test 2
+			~ inner test 0
 = asdf =
 	. [6/6/2020] test item
 	. [6/5/2020] test item
+= asdf =
