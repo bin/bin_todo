@@ -10,7 +10,6 @@
 	! uiop
 	* zxcv
 
-TODO: dates that are further in the past become lower priority?  Huh?
 = asdf =
 	! uiop
 		~ blargh2
@@ -37,7 +36,3 @@ TODO: dates that are further in the past become lower priority?  Huh?
 			! inner test 1
 			* inner test 2
 			~ inner test 0
-= asdf =
-	. [6/6/2020] test item
-	. [6/5/2020] test item
-= asdf =
