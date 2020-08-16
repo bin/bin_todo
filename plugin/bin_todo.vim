@@ -7,6 +7,10 @@ if exists("g:_loaded_bin_todo") || &cp || v:version < 800
 endif
 let g:_loaded_bin_todo = 1
 
+" Options
+set nowrap
+set textwidth=0
+
 " Find the line numbers of current block
 " Blocks are delimited by dates of the following form:
 " = mm/dd/yyyy =
