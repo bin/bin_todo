@@ -11,4 +11,4 @@ setlocal expandtab!
 " Same as tabstop
 setlocal shiftwidth=8
 " No completion
-setlocal completefunc!
+setlocal completefunc
