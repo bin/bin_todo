@@ -412,6 +412,8 @@ endfunction
 
 function _write_fmtd_mod(formatted)
 	execute 0
+	" New date block
+	call append(0, "= " . strftime('%m/%d/%y') . " =")
 	" Output re-ordered block.
 	call append(0, a:formatted)
 endfunction
