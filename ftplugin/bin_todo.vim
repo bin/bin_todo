@@ -13,4 +13,4 @@ setlocal shiftwidth=8
 " No completion
 setlocal completefunc
 
-command Newday execute ":call s:_check_todo_sort_newday()"
+command Newday execute ":call _check_todo_sort_newday()"

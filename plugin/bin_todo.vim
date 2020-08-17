@@ -21,7 +21,7 @@ set textwidth=0
 " Searches up to find the top and down to find the bottom; the plugin operates 
 " only on the current block
 " Line numbers don't include the date lines but do include newlines
-function s:_get_curr_block_lines()
+function _get_curr_block_lines()
 	" find top of block
 	let curr_line = line('.')
 	while getline(curr_line) !~# '^=.*' && curr_line >= 0
@@ -37,7 +37,7 @@ function s:_get_curr_block_lines()
 	let g:bottom_line = curr_line - 1
 endfunction
 
-function s:_log5(in)
+function _log5(in)
 	" Pre-calculated
 	let s:log10_5 = 0.6990
 	return log10(a:in) / s:log10_5
@@ -47,14 +47,14 @@ endfunction
 " I honestly have no idea how this formula works, but subtracting two of these
 " gives the difference in days.
 " https://stackoverflow.com/a/12863278
-function s:_julian_num(day, month, year)
+function _julian_num(day, month, year)
 	let l:month = (a:month + 9) % 12
 	let l:year = a:year - (l:month / 10)
 	return floor((365 * l:year) + (l:year / 4) - (l:year / 100) + (l:year / 400) + (((l:month * 306) + 5) / 10) + (a:day - 1))
 endfunction
 
 " Takes a date as mm/dd or mm/dd/yy and returns the number of days from today
-function s:_date_diff(date)
+function _date_diff(date)
 	let l:curr_date = split(strftime('%m/%d/%y'), "/")
 	let l:curr_month = l:curr_date[0]
 	let l:curr_day = l:curr_date[1]
@@ -71,23 +71,23 @@ function s:_date_diff(date)
 	endif
 
 	let l:difference= 0
-	let l:in_num = s:_julian_num(l:in_day, l:in_month, l:in_year)
-	let l:curr_num = s:_julian_num(l:curr_day, l:curr_month, l:curr_year)
+	let l:in_num = _julian_num(l:in_day, l:in_month, l:in_year)
+	let l:curr_num = _julian_num(l:curr_day, l:curr_month, l:curr_year)
 
 	return l:in_num - l:curr_num
 endfunction
 
 " Importance is a value 1-4 inclusive corresponding to . ~ * !
 " Due is the due date, given as mm/dd or mm/dd/yy.
-function s:_score(importance, due)
-	let l:days = s:_date_diff(a:due)
+function _score(importance, due)
+	let l:days = _date_diff(a:due)
 	if l:days <= 0
 		" Can't take log of a negative number and can't have division
 		" by zero.  Anything due same-day or late is top-priority
 		" anyway.
 		let l:log_res = 0.01
 	else
-		let l:log_res = s:_log5(l:days)
+		let l:log_res = _log5(l:days)
 	endif
 	return a:importance / l:log_res
 endfunction
@@ -154,7 +154,7 @@ let s:num_to_type = {
 	\ "2": ".",
 	\ "1": "#",
 	\}
-function s:_read_list()
+function _read_list()
 	let s:curr_list = []
 	let s:parent_list = []
 	let s:last_depth = 1
@@ -196,7 +196,7 @@ function s:_read_list()
 			let l:date = substitute(line, '^\t*..\(\[\(.*\)\]\)\? .*$', '\2', '')
 			if l:date !~# '^\s*$'
 				let l:tmp["date"] = l:date
-				let l:tmp["score"] = s:_score(l:tmp["importance"], l:tmp["date"])
+				let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
 			else
 				let l:tmp["score"] = 0
 			endif
@@ -211,7 +211,7 @@ function s:_read_list()
 	return s:parent_list[0]
 endfunction
 
-function s:_read_list_mod()
+function _read_list_mod()
 	let s:curr_list = []
 	let s:parent_list = []
 	let s:last_depth = 1
@@ -253,7 +253,7 @@ function s:_read_list_mod()
 			let l:date = substitute(line, '^\t*..\(\[\(.*\)\]\)\? .*$', '\2', '')
 			if l:date !~# '^\s*$'
 				let l:tmp["date"] = l:date
-				let l:tmp["score"] = s:_score(l:tmp["importance"], l:tmp["date"])
+				let l:tmp["score"] = _score(l:tmp["importance"], l:tmp["date"])
 			else
 				let l:tmp["score"] = 0
 			endif
@@ -305,16 +305,16 @@ endfunction
 " ascending a level, repeat.  Sorting is done via quicksort.
 "
 " TODO: for some reason, this does not yet work on top-level items... why?
-function s:_sort_trie(in)
+function _sort_trie(in)
 	if len(a:in) > 0
 			let i = 0
 			while i < len(a:in)
-				let a:in[i]["children"] = s:_sort_trie(a:in[i]["children"])
-				let a:in[i]["children"] = sort(a:in[i]["children"], "s:_compare_dicts_by_score")
+				let a:in[i]["children"] = _sort_trie(a:in[i]["children"])
+				let a:in[i]["children"] = sort(a:in[i]["children"], "_compare_dicts_by_score")
 				let i += 1
 			endwhile
 	 endif
-	 return sort(a:in, "s:_compare_dicts_by_score")
+	 return sort(a:in, "_compare_dicts_by_score")
 endfunction
 
 " Function passed to vim's sort() to compare two dictionaries by score value
@@ -326,7 +326,7 @@ endfunction
 " If both elements lack scores, the importance rankings are compared and the
 " result is returned.
 " Note: items with no score have their score field set to zero.
-function s:_compare_dicts_by_score(d1, d2)
+function _compare_dicts_by_score(d1, d2)
 	let l:n1 = a:d1["score"]
 	let l:n2 = a:d2["score"]
 	if type(a:d1["score"]) == type("")
@@ -357,14 +357,14 @@ function s:_compare_dicts_by_score(d1, d2)
 endfunction
 
 " Flatten all the trie into one list
-function s:_flatten_sorted(sorted)
+function _flatten_sorted(sorted)
 	let val = []
 	for elem in a:sorted
 		let children = elem["children"]
 		let elem["children"] = []
 		call add(val, elem)
 		if len(children) > 0
-			call extend(val, s:_flatten_sorted(children))
+			call extend(val, _flatten_sorted(children))
 			let elem["children"] = []
 		endif
 		unlet elem
@@ -373,7 +373,7 @@ function s:_flatten_sorted(sorted)
 endfunction
 
 " Turn the flattened trie into a list of formatted lines
-function s:_fmt_flattened(flattened)
+function _fmt_flattened(flattened)
 	let val = []
 	for elem in a:flattened
 		let str = ""
@@ -392,7 +392,7 @@ function s:_fmt_flattened(flattened)
 	return val
 endfunction
 
-function s:_write_fmtd(formatted)
+function _write_fmtd(formatted)
 	" store starting position
 	let orig_pos = winsaveview()
 	let new_top = g:top_line - 1
@@ -410,24 +410,24 @@ function s:_write_fmtd(formatted)
 	call winrestview(orig_pos)
 endfunction
 
-function s:_check_todo_sort()
+function _check_todo_sort()
 	let g:num_processed = 0
-	call s:_get_curr_block_lines()
-	let s:trie = s:_read_list()
-	let s:sorted = s:_sort_trie(s:trie)
-	let s:flat = s:_flatten_sorted(s:sorted)
-	let s:fmtd = s:_fmt_flattened(s:flat)
-	call s:_write_fmtd(s:fmtd)
+	call _get_curr_block_lines()
+	let s:trie = _read_list()
+	let s:sorted = _sort_trie(s:trie)
+	let s:flat = _flatten_sorted(s:sorted)
+	let s:fmtd = _fmt_flattened(s:flat)
+	call _write_fmtd(s:fmtd)
 endfunction
 
-function s:_check_todo_sort_newday()
+function _check_todo_sort_newday()
 	let g:num_processed = 0
-	call s:_get_curr_block_lines()
-	let s:trie = s:_read_list_mod()
-	let s:sorted = s:_sort_trie(s:trie)
-	let s:flat = s:_flatten_sorted(s:sorted)
-	let s:fmtd = s:_fmt_flattened(s:flat)
-	call s:_write_fmtd(s:fmtd)
+	call _get_curr_block_lines()
+	let s:trie = _read_list_mod()
+	let s:sorted = _sort_trie(s:trie)
+	let s:flat = _flatten_sorted(s:sorted)
+	let s:fmtd = _fmt_flattened(s:flat)
+	call _write_fmtd(s:fmtd)
 endfunction
 
-autocmd InsertLeave todo.txt call s:_check_todo_sort()
+autocmd InsertLeave todo.txt call _check_todo_sort()
