@@ -3,7 +3,7 @@ syntax keyword bin_todo_keywords
 	\ *
 	\ ~
 	\ .
-	\ d
+	\ #
 	\ +
 	\ =
 
@@ -23,7 +23,7 @@ syntax region bin_todo_bang start="^\t*\! " end=".*" contains=bin_todo_item_date
 syntax region bin_todo_bullet start="^\t*\* " end=".*" contains=bin_todo_item_date
 syntax region bin_todo_tilde start="^\t*\~ " end=" .*" contains=bin_todo_block_date
 syntax region bin_todo_dot start="^\t*\. " end=" .*" contains=bin_todo_block_date
-syntax region bin_todo_done start="^\t*\d " end=" .*" contains=bin_todo_block_date
+syntax region bin_todo_done start="^\t*\# " end=" .*" contains=bin_todo_block_date
 " syntax region bin_todo_plus start="^\t\t+ " end=" .*" contains=bin_todo_block_date
 " Match dates on items
 " Date matching is the same as bin_todo_block_date regex
