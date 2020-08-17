@@ -4,12 +4,12 @@ setlocal commentstring=//\ %s
 " Also set = be a keyword (for the date string)
 setlocal iskeyword+=!,*,~,.,+,=
 " 8-char tabs are best
-setlocal tabstop=8
-setlocal softtabstop=8
+"setlocal tabstop=8
+"setlocal softtabstop=8
 " Spaces are heresy
-setlocal expandtab!
+"setlocal expandtab!
 " Same as tabstop
-setlocal shiftwidth=8
+"setlocal shiftwidth=8
 " No completion
 setlocal completefunc
 
