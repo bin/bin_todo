@@ -140,10 +140,11 @@ endfunction
 "	last element of parent_list.  Then, process the current line into
 "	curr_list.
 let s:type_to_num = {
-	\ "!": 4,
-	\ "*": 3,
-	\ "~": 2,
-	\ ".": 1,
+	\ "!": 5,
+	\ "*": 4,
+	\ "~": 3,
+	\ ".": 2,
+	\ "x": 1,
 	\}
 let s:num_to_type = {
 	\ "4": "!",
