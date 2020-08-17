@@ -95,10 +95,11 @@ endfunction
 " Read the todos for a given day into a trie structure.
 "
 " Importance:
-" !: 4
-" *: 3
-" ~: 2
-" .: 1
+" !: 5
+" *: 4
+" ~: 3
+" .: 2
+" #: 1
 "
 " Reading in works by looping through a nested list of tasks and storing them
 " in a trie structure.  Each line is stored as a dictionary with the following
@@ -106,7 +107,7 @@ endfunction
 " Depth: The indentation of the line.  This is used to determine of which line
 " a given line is a child.
 " Date: The due date of an item.  This is optional but recommended.
-" Importance: Ranked one to four based on the entry symbol used !|*|~|.,
+" Importance: Ranked one to four based on the entry symbol used !|*|~|.|#,
 " respectively.
 " Content: The content of the item, that is, the actual to-do.
 " Score: The importance score, calculated as outlined above.
@@ -190,7 +191,7 @@ function s:_read_list()
 			" Nothing needed for items at the same depth as the priot item
 			let l:tmp = {}
 			let l:tmp["depth"] = s:tabs
-			let l:type = substitute(line, '^\t*.\(\.\|\!\|\~\|\*\) \(\[.*\]\)\?.*$', '\1', '')
+			let l:type = substitute(line, '^\t*.\(\.\|\!\|\~\|\#\|\*\) \(\[.*\]\)\?.*$', '\1', '')
 			let l:tmp["importance"] = s:type_to_num[l:type]
 			let l:date = substitute(line, '^\t*..\(\[\(.*\)\]\)\? .*$', '\2', '')
 			if l:date !~# '^\s*$'
