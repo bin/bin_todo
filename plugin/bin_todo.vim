@@ -211,6 +211,65 @@ function s:_read_list()
 	return s:parent_list[0]
 endfunction
 
+function s:_read_list_mod()
+	let s:curr_list = []
+	let s:parent_list = []
+	let s:last_depth = 1
+	let l:start = g:top_line
+	while l:start <= g:bottom_line
+		let l:line = getline(l:start)
+		if l:line !~# '^\s*$'
+			let s:tabs = 0
+			for s:char in split(l:line, '\zs')
+				if s:char =~# '\t'
+					let s:tabs += 1
+				else
+					break
+				endif
+			endfor
+			if s:tabs > s:last_depth
+				" Child item
+				call add(s:parent_list, s:curr_list)
+				let s:curr_list = s:curr_list[-1]["children"]
+			elseif s:tabs < s:last_depth
+				" Sub-list(s) have ended; traverse back up the trie
+				let l:difference = s:last_depth - s:tabs
+				while l:difference > 0
+					let s:curr_list = s:parent_list[-1]
+					call remove(s:parent_list, -1)
+					let l:difference -= 1
+				endwhile
+				"let l:i = s:tabs
+				"while s:curr_list[-1]["depth"] == s:tabs
+				"	let s:curr_list = s:parent_list[-1]
+				"endwhile
+				"let s:curr_list = s:parent_list
+			endif
+			" Nothing needed for items at the same depth as the priot item
+			let l:tmp = {}
+			let l:tmp["depth"] = s:tabs
+			let l:type = substitute(line, '^\t*.\(\.\|\!\|\~\|\#\|\*\) \(\[.*\]\)\?.*$', '\1', '')
+			let l:tmp["importance"] = s:type_to_num[l:type]
+			let l:date = substitute(line, '^\t*..\(\[\(.*\)\]\)\? .*$', '\2', '')
+			if l:date !~# '^\s*$'
+				let l:tmp["date"] = l:date
+				let l:tmp["score"] = s:_score(l:tmp["importance"], l:tmp["date"])
+			else
+				let l:tmp["score"] = 0
+			endif
+			let l:tmp["content"] = substitute(line, '^\t*..\(\[.*\]\)\? \(.*\)$', '\2', '')
+			let l:tmp["children"] = []
+			let s:last_depth = s:tabs
+			if l:tmp["score"] != 1
+				call add(s:curr_list, l:tmp)
+			endif
+		endif
+		let l:start += 1
+	endwhile
+	call add(s:parent_list, s:curr_list)
+	return s:parent_list[0]
+endfunction
+
 " There are three attributes to consider for a task:
 " 1. Importance.  I assign this a score of one through four, inclusive, by
 "    using the ! * ~ . system.  A greater importance should positively bias the
@@ -355,13 +414,19 @@ function s:_check_todo_sort()
 	let g:num_processed = 0
 	call s:_get_curr_block_lines()
 	let s:trie = s:_read_list()
-	" echo "trie is " . string(s:trie)
 	let s:sorted = s:_sort_trie(s:trie)
-	" echo "sorted is " . string(s:sorted)
 	let s:flat = s:_flatten_sorted(s:sorted)
-	" echo "flattened is " . string(s:flat)
 	let s:fmtd = s:_fmt_flattened(s:flat)
-	" echo "formatted is " . string(s:fmtd)
+	call s:_write_fmtd(s:fmtd)
+endfunction
+
+function s:_check_todo_sort_newday()
+	let g:num_processed = 0
+	call s:_get_curr_block_lines()
+	let s:trie = s:_read_list_mod()
+	let s:sorted = s:_sort_trie(s:trie)
+	let s:flat = s:_flatten_sorted(s:sorted)
+	let s:fmtd = s:_fmt_flattened(s:flat)
 	call s:_write_fmtd(s:fmtd)
 endfunction
 
