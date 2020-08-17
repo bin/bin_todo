@@ -410,6 +410,12 @@ function _write_fmtd(formatted)
 	call winrestview(orig_pos)
 endfunction
 
+function _write_fmtd_mod(formatted)
+	execute 0
+	" Output re-ordered block.
+	call append(0, a:formatted)
+endfunction
+
 function _check_todo_sort()
 	let g:num_processed = 0
 	call _get_curr_block_lines()
@@ -427,7 +433,7 @@ function _check_todo_sort_newday()
 	let s:sorted = _sort_trie(s:trie)
 	let s:flat = _flatten_sorted(s:sorted)
 	let s:fmtd = _fmt_flattened(s:flat)
-	call _write_fmtd(s:fmtd)
+	call _write_fmtd_mod(s:fmtd)
 endfunction
 
 autocmd InsertLeave todo.txt call _check_todo_sort()
