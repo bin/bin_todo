@@ -26,7 +26,7 @@ symbol from the following list.  Symbols signify the importance of a task, with 
 number representing higher importance.  They are also highlighted according to urgency:
 
 Symbol | Importance | Color
---- | ---
+--- | --- | ---
 `!` | 4 | Red
 `*` | 3 | Yellow
 `~` | 2 | Green
