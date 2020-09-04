@@ -78,7 +78,7 @@ install it like this: `Plug 'bin/bin_todo'`.
 * Performance improvements where possible, though I have yet to encounter issues.
 * Add a setting to sort with a manually-executed command, rather than each time the user leaves insert mode.
 * Potentially somehow restrict user input to prevent issues with incomplete or badly-fomratted lines?
-
+* Different highlighting color for date delimiting lines
 
 # Known bugs
 
