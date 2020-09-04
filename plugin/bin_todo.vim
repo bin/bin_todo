@@ -141,18 +141,18 @@ endfunction
 "	last element of parent_list.  Then, process the current line into
 "	curr_list.
 let s:type_to_num = {
-	\ "!": 5,
-	\ "*": 4,
-	\ "~": 3,
-	\ ".": 2,
-	\ "#": 1,
+	\ "!": 4,
+	\ "*": 3,
+	\ "~": 2,
+	\ ".": 1,
+	\ "#": 0,
 	\}
 let s:num_to_type = {
-	\ "5": "!",
-	\ "4": "*",
-	\ "3": "~",
-	\ "2": ".",
-	\ "1": "#",
+	\ "4": "!",
+	\ "3": "*",
+	\ "2": "~",
+	\ "1": ".",
+	\ "0": "#",
 	\}
 function _read_list()
 	let s:curr_list = []
