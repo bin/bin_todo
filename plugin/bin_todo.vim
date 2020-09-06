@@ -87,7 +87,9 @@ function _score(importance, due)
 		" anyway.
 		let l:log_res = 0.01
 	else
-		let l:log_res = _log5(l:days)
+		" Shift the log function so we aren't dealing with zero or
+		" out-of-domain
+		let l:log_res = _log5(l:days + 0.5)
 	endif
 	return a:importance / l:log_res
 endfunction
