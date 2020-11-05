@@ -262,7 +262,7 @@ function _read_list_mod()
 			let l:tmp["content"] = substitute(line, '^\t*..\(\[.*\]\)\? \(.*\)$', '\2', '')
 			let l:tmp["children"] = []
 			let s:last_depth = s:tabs
-			if l:tmp["importance"] != 1
+			if l:tmp["importance"] != 0
 				call add(s:curr_list, l:tmp)
 			endif
 		endif
