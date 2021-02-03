@@ -35,8 +35,6 @@ function s:get_curr_block_lines()
 		let curr_line += 1
 	endwhile
 	let g:bottom_line = curr_line - 1
-	
-	echoerr g:top_line + " " + g:bottom_line
 endfunction
 
 function s:log5(in)
