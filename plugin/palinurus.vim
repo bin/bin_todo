@@ -23,11 +23,12 @@ set textwidth=0
 " Line numbers don't include the date lines but do include newlines
 function s:get_curr_block_lines()
 	" find top of block
-	let curr_line = line('.')
-	while getline(curr_line) !~# '^=.*' && curr_line >= 0
+	let curr_line = line('.' + 1)
+	while getline(curr_line + 1) !~# '^=.*' && curr_line >= 0
 		let curr_line -= 1
 	endwhile
-	let g:top_line = curr_line + 1
+	"let g:top_line = curr_line + 1
+	let g:top_line = curr_line
 
 	" find bottom of block
 	let curr_line = line('.')
