@@ -1,11 +1,11 @@
-" bin_todo.vim - Todo list
+" palinurus.vim - Todo list
 " Author: 	bin
 " Version:	0.1
 
-if exists("g:_loaded_bin_todo") || &cp || v:version < 800
+if exists("g:_loaded_palinurus") || &cp || v:version < 800
 	finish
 endif
-let g:_loaded_bin_todo = 1
+let g:_loaded_palinurus = 1
 
 " Options
 set nowrap
@@ -35,6 +35,8 @@ function s:get_curr_block_lines()
 		let curr_line += 1
 	endwhile
 	let g:bottom_line = curr_line - 1
+	
+	echoerr g:top_line + " " + g:bottom_line
 endfunction
 
 function s:log5(in)
