@@ -2,4 +2,4 @@
 " Also set = be a keyword (for the date string)
 setlocal iskeyword+=!,*,~,.,=
 
-command Newday execute ":call _check_todo_sort_newday()"
+command Newday execute ":call Check_todo_sort_newday()"

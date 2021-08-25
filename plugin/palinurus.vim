@@ -422,7 +422,7 @@ function s:write_fmtd_mod(formatted)
 	call append(1, a:formatted)
 endfunction
 
-function s:check_todo_sort()
+function Check_todo_sort()
 	let g:num_processed = 0
 	call s:get_curr_block_lines()
 	let s:trie = s:read_list()
@@ -432,7 +432,7 @@ function s:check_todo_sort()
 	call s:write_fmtd(s:fmtd)
 endfunction
 
-function s:check_todo_sort_newday()
+function Check_todo_sort_newday()
 	let g:num_processed = 0
 	call s:get_curr_block_lines()
 	let s:trie = s:read_list_mod()
@@ -442,4 +442,4 @@ function s:check_todo_sort_newday()
 	call s:write_fmtd_mod(s:fmtd)
 endfunction
 
-autocmd InsertLeave todo.txt call s:check_todo_sort()
+autocmd InsertLeave todo.txt call Check_todo_sort()
